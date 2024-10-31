@@ -4,7 +4,8 @@
 
 # Webscrapping
 import requests
-from io import BytesIO
+from bs4 import BeautifulSoup
+import re
 import lxml.html as lh
 
 
@@ -98,18 +99,16 @@ def get_pages_comm(nb_pages, url):
 
 
 
-def get_presse_vs_spect(annee, nb_pages, genre=None):
+def get_lien(annee, genre=None):
     """ 
-    Notes Presse et notes Spectateurs pour divers films de périmètre (annee, genre)
+    Construction du lien de la page d'accueil d'une liste de films :
 
-    ENTREES
-    - année : possible seulement de 2020 à 2029
-    - nb_pages : nombre de pages de films considérés
-    - genre : si non mentionné, tous les genres confondus sont récupérés
-
+    ENTREES  
+    - année (int): année considérée des films (entre 2020 et 2029)
+    - genre : si non mentionné, tous les genres confondus sont considérés
 
     SORTIE 
-    - Dataframe avec les notes moyennes des spectateurs et de la presse 
+    - lien html
 
     """
 
@@ -145,24 +144,123 @@ def get_presse_vs_spect(annee, nb_pages, genre=None):
             return
    
         # Construction de l'URL
-        url = 'https://www.allocine.fr/films/genre-' + genre_numerique + '/decennie-2020/'+ 'annee-' + annee + '/'
+        return 'https://www.allocine.fr/films/genre-' + genre_numerique + '/decennie-2020/'+ 'annee-' + annee + '/'
     
     else:
-        url = 'https://www.allocine.fr/films/decennie-2020/'+ 'annee-' + annee + '/'
-    
-    table_finale = pd.DataFrame()
-    cols = ['Auteurs', 'Note']
-    elements_a_scrapper = ['//span[contains(@class, " rating-title")]',\
-'//span[@class="stareval-note"]']  
-    uri_pages = '?page='
+        return 'https://www.allocine.fr/films/decennie-2020/'+ 'annee-' + annee + '/'
 
-    # Récupération des données en utérant sur le nombre de pages souhaitées
+
+
+
+def get_page_comparaison_notes(lien):
+    """ 
+    Récupération des notes Presse et notes Spectateurs
+
+    ENTREES
+    - lien : lien html où les données sont à récupérer
+
+    SORTIE 
+    - Dataframe avec les notes moyennes des spectateurs et de la presse, ainsi que la durée, date et genre des films
+
+    """
+    
+    code_page = requests.get(lien)
+
+
+    # Vérification que l'URL est fonctionnelle
+    if code_page.status_code != 200:
+        print(f"Erreur lors du chargement de l'URL : {code_page.status_code}")
+        return 
+    
+    soup = BeautifulSoup(code_page.text, 'html.parser')
+    films = soup.find_all('div', class_='card entity-card entity-card-list cf')
+
+
+    nom_colonnes = ['date', 'durée', 'spectateur', 'presse', 'genre1','genre2','genre3']
+    table_finale = pd.DataFrame(columns=nom_colonnes)
+
+    # Boucle pour chaque film présent sur la page
+    for film in films:
+
+        meta_body = film.find('div', class_='meta-body-item meta-body-info')
+
+
+        # Extraction de la date
+        date_span = meta_body.find('span', class_='date')
+        date_text = date_span.get_text(strip=True)
+
+
+        # Extraire de la durée
+        duration_text = meta_body.get_text(strip=True)
+        duration_match = re.search(r'(\d+h \d+min)', duration_text)
+        duration = duration_match.group(1) if duration_match else None
+
+        # Extraction des genres 
+        genres_list = ['', '', '']
+        genre_index = 0
+        for genre in meta_body.find_all('span', class_='dark-grey-link'):
+            genre_text = genre.get_text(strip=True)
+            if genre_index < 3:
+                genres_list[genre_index] = genre_text
+                genre_index += 1
+
+
+
+        # Extraction des notes
+        avis = film.find_all('div', class_='rating-item')
+        presse_note = None
+        spectateurs_note = None
+
+        for notation in avis:
+            title = notation.find('span', class_='rating-title')
+            title_text = title.get_text(strip=True) if title else None
+
+            note = notation.find('span', class_='stareval-note')
+            note_text = note.get_text(strip=True) if note else None
+            
+            if title_text == "Presse":
+                presse_note = note_text
+            elif title_text == "Spectateurs":
+                spectateurs_note = note_text
+
+
+        # Prise en compte du film si la note PRESSE et la note SPECTATEURS sont présentes
+        if presse_note is not None and spectateurs_note is not None:
+            new_row = pd.DataFrame([[date_text, duration, spectateurs_note, presse_note, genres_list[0],genres_list[1],genres_list[2]]], columns = nom_colonnes)
+            table_finale = pd.concat([table_finale,new_row], ignore_index=True)
+        
+    return table_finale
+
+
+
+
+def get_comparaison_notes(annee, nb_pages, genre=None):
+    """ 
+    Notes Presse et notes Spectateurs pour divers films de périmètre (annee, genre)
+
+    ENTREES
+    - année : possible seulement de 2020 à 2029
+    - nb_pages : nombre de pages de films considérés
+    - genre : si non mentionné, tous les genres confondus sont récupérés
+
+
+    SORTIE 
+    - Dataframe avec les notes moyennes des spectateurs et de la presse 
+
+    """
+
+    url = get_lien(annee, genre)
+    if not url:
+        return
+
+
+    table_finale = pd.DataFrame()
+
+    # Récupération des données en itérant sur le nombre de pages souhaitées
+    uri_pages = '?page='
     for i in range (nb_pages):
 
-        table = get_donnees(url + uri_pages + str(i+1), elements_a_scrapper, cols)
+        table = get_page_comparaison_notes(url + uri_pages + str(i+1))
         table_finale = pd.concat([table_finale, table], ignore_index=True)
-
-    if genre is not None:
-        table_finale['genre'] = genre
 
     return table_finale
