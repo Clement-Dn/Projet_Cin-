@@ -1,5 +1,12 @@
 
 
+
+##########################   Fonctions pour récupérer différentes informations sur internet    ###########################
+##########################################################################################################################
+##########################################################################################################################
+
+
+
 # Importations des librairies
 
 # Webscrapping
@@ -13,12 +20,20 @@ import io
 # Manipulation des données
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 
 
-def get_donnees(url, elements_a_scrapper, cols):   # QUand temps => mettre au propre cette fonction !
+#############################################################
+#############################################################
+#############################################################
+############################################################# ????? PAS BESOIN DE CETTE PARTIE SI PAS NLP sur commentaires.....
+#############################################################
+#############################################################
+#############################################################
+
+
+def get_donnees(url, elements_a_scrapper, cols):   # Quand temps => mettre au propre cette fonction ! (si on l'utilise...sinon sup....)
     """
     Extraction des données d'une page web
 
@@ -34,13 +49,16 @@ def get_donnees(url, elements_a_scrapper, cols):   # QUand temps => mettre au pr
     """
     page = requests.get(url)
 
+
     # Vérification que l'URL est fonctionnelle
     if page.status_code != 200:
         print(f"Erreur lors du chargement de l'URL : {page.status_code}")
         return 
     
+
     # Objet arborescent pour extraire les éléments HTML
     doc = lh.fromstring(page.content)
+
 
     # Extraction des données  
     content = []
@@ -69,6 +87,8 @@ def get_donnees(url, elements_a_scrapper, cols):   # QUand temps => mettre au pr
 
 
 
+
+
 def get_pages_comm(nb_pages, url):
     """ 
     Récupération des commentaires et notes CLIENTS sur plusieurs pages d'UN FILM
@@ -84,10 +104,14 @@ def get_pages_comm(nb_pages, url):
     """
 
     table_finale = pd.DataFrame()
+
+
     cols = ['Note', 'Date','Description' ]
     elements_a_scrapper = ['//span[@class="stareval-note"]', \
 '//span[@class="review-card-meta-date light"]', \
 '//div[@class="content-txt review-card-content"]' ]
+    
+
     uri_pages = '?page='
 
     for i in range (nb_pages):
@@ -97,6 +121,18 @@ def get_pages_comm(nb_pages, url):
 
     return table_finale
 
+
+
+
+
+
+#############################################################
+#############################################################
+#############################################################
+#############################################################  Récupération d'une série de films avec leurs notes associées 
+#############################################################
+#############################################################
+#############################################################
 
 
 
@@ -115,15 +151,22 @@ def get_lien(annee, genre=None):
 
     # Vérification de la validité de l'année
     if isinstance(annee, int):
-        if annee > 2029 or annee < 2020:
-            print(f"L'année '{annee}' n'est pas valide (doit être comprise entre 2020 et 2029)")
+        if annee > 2029 or annee < 2010:
+            print(f"L'année '{annee}' n'est pas valide (doit être comprise entre 2010 et 2029)")
             return
     else:
         print(f"L'annee doit être un entier")
         return
     
-    annee = str(annee)
+    # récupération de la décennie correspondant sur le site AlloCine
+    decennie = '2020'
+
+    if annee < 2020:
+        decennie = '2010'
      
+    
+    annee = str(annee)
+
 
     # Equivalence numérique du genre recherché
     genre_numerique = ''
@@ -145,10 +188,10 @@ def get_lien(annee, genre=None):
             return
    
         # Construction de l'URL
-        return 'https://www.allocine.fr/films/genre-' + genre_numerique + '/decennie-2020/'+ 'annee-' + annee + '/'
+        return 'https://www.allocine.fr/films/genre-' + genre_numerique + '/decennie-' + decennie + '/annee-' + annee + '/'
     
     else:
-        return 'https://www.allocine.fr/films/decennie-2020/'+ 'annee-' + annee + '/'
+        return 'https://www.allocine.fr/films/decennie-' + decennie + '/annee-' + annee + '/'
 
 
 
@@ -170,56 +213,29 @@ def get_page_comparaison_notes(lien):
         # Vérification que la requête est réussie
         if code_page.status_code != 200:
             print(f"Erreur lors du chargement de l'URL : {code_page.status_code}")
-            return 
+            return "fini"
     
     except Exception as e:
         print(f"Erreur lors du chargement : {e}")
 
-
-    soup = BeautifulSoup(code_page.text, 'html.parser')
-    films = soup.find_all('div', class_='card entity-card entity-card-list cf')
+        return "fini"
 
 
-    nom_colonnes = ['date', 'durée','auteur', 'spectateur', 'presse', 'genre1','genre2','genre3']
+    balises = BeautifulSoup(code_page.text, 'html.parser')
+    films = balises.find_all('div', class_='card entity-card entity-card-list cf')
+
+
+    nom_colonnes = ['titre','date', 'durée','auteur', 'spectateur', 'presse', 'genre1','genre2','genre3']
 
     table_finale = pd.DataFrame(columns=nom_colonnes)
 
     # Boucle pour chaque film présent sur la page
     for film in films:
+            
 
         meta_body = film.find('div', class_='meta-body-item meta-body-info')
 
         if meta_body:
-            
-            # Extraction de la date
-            date = ""
-            date_span = meta_body.find('span', class_='date')
-            date = date_span.get_text(strip=True) if date_span else None   
-
-
-            # Extraction de la durée
-            duree = ""
-            duree_text = meta_body.get_text(strip=True)
-            duree_h_min = re.search(r'(\d+h \d+min)', duree_text)
-            duree = duree_h_min.group(1) if duree_h_min else None   
-
-
-            # Extraction de l'auteur
-            auteur = ""
-            meta_direction = film.find('div', class_='meta-body-item meta-body-direction')
-            if meta_direction:
-                auteur_texte = meta_direction.find('span', class_='dark-grey-link')
-                auteur = auteur_texte.get_text(strip=True) if auteur_texte else None   
-
-
-            # Extraction des genres du film
-            genres_list = ['', '', '']
-            genre_index = 0
-            for genre in meta_body.find_all('span', class_='dark-grey-link'):
-                genre_text = genre.get_text(strip=True) if genre else None
-                if genre_index < 3:
-                    genres_list[genre_index] = genre_text
-                    genre_index += 1
 
 
             # Extraction des notes
@@ -238,12 +254,50 @@ def get_page_comparaison_notes(lien):
                     presse_note = note_text
                 elif title_text == "Spectateurs":
                     spectateurs_note = note_text
+            
+            # Prise en compte des autres éléments que si la note SPECTATEURS et la note PRESSE sont présentes
+            if presse_note is not None and spectateurs_note is not None:
+            
+
+                # Extraction de la date
+                date = ""
+                date_span = meta_body.find('span', class_='date')
+                date = date_span.get_text(strip=True) if date_span else None   
 
 
-        # Prise en compte du film si la note PRESSE et la note SPECTATEURS sont présentes
-        if presse_note is not None and spectateurs_note is not None:
-            new_row = pd.DataFrame([[date, duree , auteur, spectateurs_note, presse_note, genres_list[0],genres_list[1],genres_list[2]]], columns = nom_colonnes)
-            table_finale = pd.concat([table_finale, new_row], ignore_index=True)
+                # Extraction de la durée
+                duree = ""
+                duree_text = meta_body.get_text(strip=True)
+                duree_h_min = re.search(r'(\d+h \d+min)', duree_text)
+                duree = duree_h_min.group(1) if duree_h_min else None   
+
+
+                # Extraction de l'auteur
+                auteur = ""
+                meta_direction = film.find('div', class_='meta-body-item meta-body-direction')
+                if meta_direction:
+                    auteur_texte = meta_direction.find('span', class_='dark-grey-link')
+                    auteur = auteur_texte.get_text(strip=True) if auteur_texte else None   
+
+
+                # Extraction des genres du film
+                genres_list = ['', '', '']
+                genre_index = 0
+                for genre in meta_body.find_all('span', class_='dark-grey-link'):
+                    genre_text = genre.get_text(strip=True) if genre else None
+                    if genre_index < 3:
+                        genres_list[genre_index] = genre_text
+                        genre_index += 1
+
+
+                # Extraction du titre
+                titre = ""
+                balise_titre = film.find('a', class_='meta-title-link')
+                titre = balise_titre.get_text(strip=True) if balise_titre else None
+
+                # Ajout de la ligne du film 
+                new_row = pd.DataFrame([[titre, date, duree , auteur, spectateurs_note, presse_note, genres_list[0],genres_list[1],genres_list[2]]], columns = nom_colonnes)
+                table_finale = pd.concat([table_finale, new_row], ignore_index=True)
         
     return table_finale
         
@@ -251,7 +305,7 @@ def get_page_comparaison_notes(lien):
 
 
 
-def get_comparaison_notes(annee, nb_pages, genre=None):
+def get_comparaison_notes(annee, genre=None):
     """ 
     Notes Presse et notes Spectateurs pour divers films de périmètre (annee, genre)
 
@@ -262,31 +316,73 @@ def get_comparaison_notes(annee, nb_pages, genre=None):
 
 
     SORTIE 
-    - Dataframe avec les notes moyennes des spectateurs et de la presse 
+    - Dataframe avec les notes moyennes des spectateurs et de la presse (si présente)
 
     """
-
     url = get_lien(annee, genre)
+
     if not url:
         return
-
 
     table_finale = pd.DataFrame()
 
     # Récupération des données en itérant sur le nombre de pages souhaitées
     uri_pages = '?page='
-    for i in range (nb_pages):
 
+    i = 0
+    valide = True
+
+    while valide == True:
+    
         table = get_page_comparaison_notes(url + uri_pages + str(i+1))
-        # if not table.empty:
-        table_finale = pd.concat([table_finale, table], ignore_index=True)
+        i = i + 1
+
+        if not table.empty:
+            table_finale = pd.concat([table_finale, table], ignore_index=True)
+        else:
+            valide = False
+
+    print("nombre de films récupérés : ", len(table_finale))
 
     return table_finale
 
+
+
+
+def get_base_films(annee1, annee2):
+    """ 
+    Récupérer les données de films entre l'annee1 et l'annee2
+
+    """
+    if not isinstance(annee1, int) or not isinstance(annee2, int):
+        print("Les années doivent être des entiers")
+    
+    
+    if annee1 <= annee2:
+
+        table = pd.DataFrame()
+        for i in range(annee1, annee2 + 1):
+
+            table_intermediaire = get_comparaison_notes(i)
+
+            # # Si il y a une erreur (lien mauvais, une seule année non récupérable, etc), la boucle s'arrête et la fonction 
+            # # s'arrête, de plus un message indiquant le problème s'affiche
+            # if not table_intermediaire:
+            #     return
+            
+            table = pd.concat([table, table_intermediaire]) 
+
+        return table
+
+
+
+
+
 #############################################################
 #############################################################
 #############################################################
-############################################################# base prenom et récupération du genre
+############################################################# Base prenom et récupération du genre
+#############################################################
 #############################################################
 #############################################################
 
@@ -306,7 +402,7 @@ def base_prenom():
         response = requests.get(url_prenom)
 
         # Vérification si la la requête a réussi
-        response.raise_for_status()  # 
+        response.raise_for_status()  #
 
         # Lire le fichier CSV à partir de la réponse
         table = pd.read_csv(io.StringIO(response.text), delimiter=';', encoding='utf-8')
@@ -335,10 +431,20 @@ def get_genre_individuel(dataframe, colonne):
     base_prenom_genre = base_prenom()
     base_prenom_genre = base_prenom_genre.drop(columns=['04_fréquence'])
 
-    # transformation du prénom en minuscule
+    # transformation du prénom en minuscule afin de pouvoir merger sans problème de Majuscule
     dataframe['prenom'] = dataframe[colonne].str.split().str[0].str.lower()
 
 
     return pd.merge(base_prenom_genre, dataframe, on='prenom', how='inner')
+
+
+
+#############################################################
+#############################################################
+#############################################################
+#############################################################  AUTRES RECUPERATOIN DE DONNEES ? 
+#############################################################
+#############################################################
+#############################################################
 
 

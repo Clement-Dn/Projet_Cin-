@@ -1,4 +1,6 @@
 
+
+
 # Importations des librairies
 import pandas as pd
 import numpy as np
@@ -20,26 +22,29 @@ def duree_en_minutes(duree):
     - Retourne la conversion en minutes de 'duree'
 
     '''
-    parts = duree.split()
+    if not pd.isna(duree):
+        parts = duree.split() 
 
-    heures = 0
-    minutes = 0
+        heures = 0
+        minutes = 0
 
-    for part in parts:
-        if 'h' in part:
-            heures = int(part.replace('h', ''))
-        elif 'min' in part:
-            minutes = int(part.replace('min', ''))
+        for part in parts:
+            if 'h' in part:
+                heures = int(part.replace('h', ''))
+            elif 'min' in part:
+                minutes = int(part.replace('min', ''))
 
-    return heures * 60 + minutes
-
+        return heures * 60 + minutes
+    return
 
 
 def mise_en_forme_decimale(valeur):
     ''' 
     Transforme les , en .
     '''
+    if isinstance(valeur, str):
+        return float(valeur.replace(',', '.'))
 
-    return float(valeur.replace(',', '.'))
-
-
+    else: 
+        valeur_convertie = str(valeur)
+        return float(valeur_convertie.replace(',', '.'))
