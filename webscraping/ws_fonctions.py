@@ -141,7 +141,7 @@ def get_lien(annee, genre=None):
     Construction du lien de la page d'accueil d'une liste de films :
 
     ENTREES  
-    - année (int): année considérée des films (entre 2020 et 2029)
+    - année (int): année considérée des films (entre 2010 et 2029)
     - genre : si non mentionné, tous les genres confondus sont considérés
 
     SORTIE 
@@ -225,7 +225,7 @@ def get_page_comparaison_notes(lien):
     films = balises.find_all('div', class_='card entity-card entity-card-list cf')
 
 
-    nom_colonnes = ['titre','date', 'durée','auteur', 'spectateur', 'presse', 'genre1','genre2','genre3']
+    nom_colonnes = ['titre','identifiant','date', 'durée','auteur', 'spectateur', 'presse', 'genre1','genre2','genre3']
 
     table_finale = pd.DataFrame(columns=nom_colonnes)
 
@@ -290,13 +290,18 @@ def get_page_comparaison_notes(lien):
                         genre_index += 1
 
 
-                # Extraction du titre
+                # Extraction du titre et de l'identifiant
                 titre = ""
+                identifiant = ""
                 balise_titre = film.find('a', class_='meta-title-link')
                 titre = balise_titre.get_text(strip=True) if balise_titre else None
 
+                lien_film = balise_titre['href']
+                numero = re.search(r'cfilm=(\d+)', lien_film)
+                identifiant = numero.group(1)
+
                 # Ajout de la ligne du film 
-                new_row = pd.DataFrame([[titre, date, duree , auteur, spectateurs_note, presse_note, genres_list[0],genres_list[1],genres_list[2]]], columns = nom_colonnes)
+                new_row = pd.DataFrame([[titre, identifiant, date, duree , auteur, spectateurs_note, presse_note, genres_list[0],genres_list[1],genres_list[2]]], columns = nom_colonnes)
                 table_finale = pd.concat([table_finale, new_row], ignore_index=True)
         
     return table_finale
@@ -310,7 +315,7 @@ def get_comparaison_notes(annee, genre=None):
     Notes Presse et notes Spectateurs pour divers films de périmètre (annee, genre)
 
     ENTREES
-    - année : possible seulement de 2020 à 2029
+    - année : possible seulement de 2010 à 2029
     - nb_pages : nombre de pages de films considérés
     - genre : si non mentionné, tous les genres confondus sont récupérés
 
