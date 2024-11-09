@@ -1,87 +1,104 @@
-import requests
+import aiohttp
+import asyncio
 from bs4 import BeautifulSoup
 import re
 import pandas as pd
 import time
 
-numero_films = pd.read_csv('numero_films.csv')
-num_film = numero_films.sample(n=100)
-liens = ["https://www.allocine.fr/film/fichefilm_gen_cfilm=" + str(num) + ".html" for num in num_film['num_film']]
+def get_carac_film(annee_select):
 
-i = 1
-film_charac = []
-for lien in liens:
-    print(i)
-    i = i + 1
-    print(lien)
-    code_page = requests.get(lien)
-    soup = BeautifulSoup(code_page.text, 'html.parser')
+    async def fetch(session, url):
+        async with session.get(url) as response:
+            return await response.text()
 
-    num = re.findall(r'\d+', lien)[0]
+    async def main():
+        async with aiohttp.ClientSession() as session:
+            # On utilise identifiant pour créer des liens
+            base_film = get_comparaison_notes(annee=annee_select)
+            liens = ["https://www.allocine.fr/film/fichefilm_gen_cfilm=" + str(id) + ".html" for id in base_film['identifiant']]
 
-    titre_element = soup.find(class_='titlebar-title titlebar-title-xl')
-    titre = titre_element.text.strip() if titre_element else ''
+            tasks = [fetch(session, url) for url in liens]
+            responses = await asyncio.gather(*tasks)
 
-    date_element = soup.find(class_='date')
-    date = date_element.text.strip() if date_element else ''
+            film_charac = []
 
-    release_element = soup.find('span', class_='meta-release-type')
-    release = release_element.text.strip() if release_element else ''
+            for i, response in enumerate(responses):
+                print(f"Film: {i+1}/{len(liens)}")
+                soup = BeautifulSoup(response, 'html.parser')
 
-    # Extrait la durée du film
-    meta_body_info = soup.find('div', class_='meta-body-item meta-body-info')
-    duree = ''
-    if meta_body_info:
-        duree_match = re.search(r'(\d+h\s*\d*min)', meta_body_info.text)
-        if duree_match:
-            duree = duree_match.group(1)
+                identifiant = re.findall(r'\d+', liens[i])[0]
 
-    # Extrait les données de la fiche technique
-    fiche_tech = soup.find('section', class_='section ovw ovw-technical')
-    if fiche_tech:
-        nationalite_span = fiche_tech.find('span', string='Nationalité')
-        nationalite = nationalite_span.find_next_sibling('span').text.strip() if nationalite_span else ''
+                titre_element = soup.find(class_='titlebar-title titlebar-title-xl')
+                titre = titre_element.text.strip() if titre_element else ''
 
-        date_sortie_dvd_span = fiche_tech.find('span', string='Date de sortie DVD')
-        date_sortie_dvd = date_sortie_dvd_span.find_next_sibling('span').text.strip() if date_sortie_dvd_span else ''
+                date_element = soup.find(class_='date')
+                date = date_element.text.strip() if date_element else ''
 
-        date_sortie_bluray_span = fiche_tech.find('span', string='Date de sortie Blu-ray')
-        date_sortie_bluray = date_sortie_bluray_span.find_next_sibling('span').text.strip() if date_sortie_bluray_span else ''
+                release_element = soup.find('span', class_='meta-release-type')
+                release = release_element.text.strip() if release_element else ''
 
-        date_sortie_vod_span = fiche_tech.find('span', string='Date de sortie VOD')
-        date_sortie_vod = date_sortie_vod_span.find_next_sibling('span').text.strip() if date_sortie_vod_span else ''
+                # Extrait la durée du film
+                meta_body_info = soup.find('div', class_='meta-body-item meta-body-info')
+                duree = ''
+                if meta_body_info:
+                    duree_match = re.search(r'(\d+h\s*\d*min)', meta_body_info.text)
+                    if duree_match:
+                        duree = duree_match.group(1)
 
-        type_film_span = fiche_tech.find('span', string='Type de film')
-        type_film = type_film_span.find_next_sibling('span').text.strip() if type_film_span else ''
+                # Extrait les données de la fiche technique
+                fiche_tech = soup.find('section', class_='section ovw ovw-technical')
+                if fiche_tech:
+                    nationalite_span = fiche_tech.find('span', string='Nationalité')
+                    nationalite = nationalite_span.find_next_sibling('span').text.strip() if nationalite_span else ''
 
-        budget_span = fiche_tech.find('span', string='Budget')
-        budget = budget_span.find_next_sibling('span').text.strip() if budget_span else ''
+                    date_sortie_dvd_span = fiche_tech.find('span', string='Date de sortie DVD')
+                    date_sortie_dvd = date_sortie_dvd_span.find_next_sibling('span').text.strip() if date_sortie_dvd_span else ''
 
-        langues_span = fiche_tech.find('span', string='Langues')
-        langues = langues_span.find_next_sibling('span').text.strip() if langues_span else ''
+                    date_sortie_bluray_span = fiche_tech.find('span', string='Date de sortie Blu-ray')
+                    date_sortie_bluray = date_sortie_bluray_span.find_next_sibling('span').text.strip() if date_sortie_bluray_span else ''
 
-        format_production_span = fiche_tech.find('span', string='Format production')
-        format_production = format_production_span.find_next_sibling('span').text.strip() if format_production_span else ''
+                    date_sortie_vod_span = fiche_tech.find('span', string='Date de sortie VOD')
+                    date_sortie_vod = date_sortie_vod_span.find_next_sibling('span').text.strip() if date_sortie_vod_span else ''
 
-        couleur_span = fiche_tech.find('span', string='Couleur')
-        couleur = couleur_span.find_next_sibling('span').text.strip() if couleur_span else ''
+                    type_film_span = fiche_tech.find('span', string='Type de film')
+                    type_film = type_film_span.find_next_sibling('span').text.strip() if type_film_span else ''
 
-        format_audio_span = fiche_tech.find('span', string='Format audio')
-        format_audio = format_audio_span.find_next_sibling('span').text.strip() if format_audio_span else ''
+                    budget_span = fiche_tech.find('span', string='Budget')
+                    budget = budget_span.find_next_sibling('span').text.strip() if budget_span else ''
 
-        format_projection_span = fiche_tech.find('span', string='Format de projection')
-        format_projection = format_projection_span.find_next_sibling('span').text.strip() if format_projection_span else ''
+                    langues_span = fiche_tech.find('span', string='Langues')
+                    langues = langues_span.find_next_sibling('span').text.strip() if langues_span else ''
 
-        num_visa_span = fiche_tech.find('span', string='N° de Visa')
-        num_visa = num_visa_span.find_next_sibling('span').text.strip() if num_visa_span else ''
-    else:
-        nationalite = date_sortie_dvd = date_sortie_bluray = date_sortie_vod = type_film = budget = langues = format_production = couleur = format_audio = format_projection = num_visa = ''
+                    format_production_span = fiche_tech.find('span', string='Format production')
+                    format_production = format_production_span.find_next_sibling('span').text.strip() if format_production_span else ''
 
-    film_charac.append([num, titre, date, duree, nationalite, date_sortie_dvd, date_sortie_bluray, date_sortie_vod, type_film, budget, langues, format_production, couleur, format_audio, format_projection, num_visa])
+                    couleur_span = fiche_tech.find('span', string='Couleur')
+                    couleur = couleur_span.find_next_sibling('span').text.strip() if couleur_span else ''
 
-print(film_charac)
+                    format_audio_span = fiche_tech.find('span', string='Format audio')
+                    format_audio = format_audio_span.find_next_sibling('span').text.strip() if format_audio_span else ''
 
-# Créer un DataFrame pandas avec les numéros de films
-df = pd.DataFrame(film_charac, columns=['num_film', 'titre', 'date', 'duree', 'release', 'nationalite', 'date_sortie_dvd', 'date_sortie_bluray', 'date_sortie_vod', 'type_film', 'budget', 'langues', 'format_production', 'couleur', 'format_audio', 'format_projection', 'num_visa'])
-# Enregistrer le DataFrame dans un fichier CSV
-df.to_csv('charc_num_titre.csv', index=False)
+                    format_projection_span = fiche_tech.find('span', string='Format de projection')
+                    format_projection = format_projection_span.find_next_sibling('span').text.strip() if format_projection_span else ''
+
+                    num_visa_span = fiche_tech.find('span', string='N° de Visa')
+                    num_visa = num_visa_span.find_next_sibling('span').text.strip() if num_visa_span else ''
+                else:
+                    nationalite = date_sortie_dvd = date_sortie_bluray = date_sortie_vod = type_film = budget = langues = format_production = couleur = format_audio = format_projection = num_visa = ''
+
+                film_charac.append([identifiant, titre, date, duree, release, nationalite, date_sortie_dvd, date_sortie_bluray, date_sortie_vod, type_film, budget, langues, format_production, couleur, format_audio, format_projection, num_visa])
+
+            # Créer un DataFrame pandas avec les numéros de films
+            df_ws = pd.DataFrame(film_charac, columns=['identifiant', 'titre', 'date', 'duree', 'release', 'nationalite', 'date_sortie_dvd', 'date_sortie_bluray', 'date_sortie_vod', 'type_film', 'budget', 'langues', 'format_production', 'couleur', 'format_audio', 'format_projection', 'num_visa'])
+            # Enregistrer le DataFrame dans un fichier CSV
+            df_ws.to_csv('film_details.csv', index=False)
+
+            return df_ws
+
+    return asyncio.run(main())
+
+# Calculer le temps d'exécution
+start_time = time.time()
+df = get_carac_film(annee_select=2020)
+end_time = time.time()
+print(f"Execution time: {end_time - start_time} seconds")
