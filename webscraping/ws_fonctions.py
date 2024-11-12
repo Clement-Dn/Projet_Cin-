@@ -362,6 +362,10 @@ def get_base_films(annee1, annee2):
     if not isinstance(annee1, int) or not isinstance(annee2, int):
         print("Les années doivent être des entiers")
     
+    if annee2 > 2029 or annee1 < 2010:
+        print(f"{annee1},{annee2} n'est pas valide (intervalle doit être compris entre 2010 et 2029)")
+        return
+    
     
     if annee1 <= annee2:
 
@@ -369,15 +373,13 @@ def get_base_films(annee1, annee2):
         for i in range(annee1, annee2 + 1):
 
             table_intermediaire = get_comparaison_notes(i)
-
-            # # Si il y a une erreur (lien mauvais, une seule année non récupérable, etc), la boucle s'arrête et la fonction 
-            # # s'arrête, de plus un message indiquant le problème s'affiche
-            # if not table_intermediaire:
-            #     return
             
             table = pd.concat([table, table_intermediaire]) 
 
         return table
+
+    else:
+        print('la première année doit être inférieure à la deuxième année')
 
 
 
@@ -434,13 +436,15 @@ def get_genre_individuel(dataframe, colonne):
     
     """
     base_prenom_genre = base_prenom()
-    base_prenom_genre = base_prenom_genre.drop(columns=['04_fréquence'])
+    base_prenom_genre = base_prenom_genre.drop(columns=['04_fréquence','langage_ind'])
 
     # transformation du prénom en minuscule afin de pouvoir merger sans problème de Majuscule
     dataframe['prenom'] = dataframe[colonne].str.split().str[0].str.lower()
 
-
-    return pd.merge(base_prenom_genre, dataframe, on='prenom', how='inner')
+    table = pd.merge(base_prenom_genre, dataframe, on='prenom', how='inner')
+    table = table.drop(columns=['prenom'])
+    
+    return table
 
 
 

@@ -10,10 +10,36 @@ import numpy as np
 
 
 
-# Conversion durée en minutes
+
+def mise_en_forme_decimale(valeur):
+    ''' 
+    Transforme les , en .
+    '''
+    if isinstance(valeur, str):
+        return float(valeur.replace(',', '.'))
+
+    else: 
+        valeur_convertie = str(valeur)
+        return float(valeur_convertie.replace(',', '.'))
+
+
+
+def get_annee(dataframe, colonne):
+    ''' 
+   
+    '''
+    dataframe[colonne] = dataframe[colonne].astype('string')
+    dataframe['annee'] = dataframe[colonne].str[-4:]
+
+    return dataframe
+
+
+
+
+
 def duree_en_minutes(duree):
     ''' 
-    Conversion en minutes
+    Conversion d'une durée en minutes
     
     ENTREE :
     - duree : chaine de caractère de la forme '2h 34min'
@@ -36,15 +62,3 @@ def duree_en_minutes(duree):
 
         return heures * 60 + minutes
     return
-
-
-def mise_en_forme_decimale(valeur):
-    ''' 
-    Transforme les , en .
-    '''
-    if isinstance(valeur, str):
-        return float(valeur.replace(',', '.'))
-
-    else: 
-        valeur_convertie = str(valeur)
-        return float(valeur_convertie.replace(',', '.'))
