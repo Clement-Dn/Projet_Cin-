@@ -24,6 +24,7 @@ def mise_en_forme_decimale(valeur):
 
 
 
+
 def get_annee(dataframe, colonne):
     ''' 
    
