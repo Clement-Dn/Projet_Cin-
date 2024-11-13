@@ -321,7 +321,7 @@ def get_comparaison_notes(annee, genre=None):
 
 
     SORTIE 
-    - Dataframe avec les notes moyennes des spectateurs et de la presse (si présente)
+    - Dataframe avec les films qui ont nécessairement les notes moyennes des spectateurs et de la presse.
 
     """
     url = get_lien(annee, genre)
@@ -396,8 +396,9 @@ def get_base_films(annee1, annee2):
 
 def base_prenom():
     """  
-    
-    
+
+    Récupération sur data.gouv d'une BDD contenant 11 627 prénoms de plusieurs pays, et 
+    pour lesquels leur genre (m/f/m,f/f,m est indiqué)   
     
     
     """
@@ -432,7 +433,7 @@ def base_prenom():
 def get_genre_individuel(dataframe, colonne):
     """  
     
-    
+    Création d'une colonne 'prenom' à partir de la COLONNE d'un DATAFRAME. + ajout de l'argument de position (pour ajout base CNC des réalisateurs)
     
     """
     base_prenom_genre = base_prenom()

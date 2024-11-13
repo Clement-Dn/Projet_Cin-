@@ -21,6 +21,7 @@ import pandas as pd
 def histogramme_genre_film(dataframe, genre):
     """ 
     
+    Affichage d'un histogramme de la distribution des notes en fonction du GENRE du film demandé
     
     """
     
@@ -97,6 +98,7 @@ def graphique_genre_film(dataframe):
 def evolution_f_h(dataframe, genre):
     """ 
     
+    Affichage de l'évolution dans le temps du nombre de films en fonction du genre du rélisateurs pour un GENRE de film demandé (si non renseigné tous les genres sont pris en compte)
     
     """
 
@@ -140,7 +142,7 @@ def evolution_f_h(dataframe, genre):
 def graphique_h_f(dataframe):
     """ 
     
-    
+    Graphique intéractif du nombre de films par réalisateur f et h en fonction du type de film
     
     """
 

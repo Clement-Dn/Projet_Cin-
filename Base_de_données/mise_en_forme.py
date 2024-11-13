@@ -14,6 +14,7 @@ import numpy as np
 def mise_en_forme_decimale(valeur):
     ''' 
     Transforme les , en .
+    
     '''
     if isinstance(valeur, str):
         return float(valeur.replace(',', '.'))
@@ -25,9 +26,11 @@ def mise_en_forme_decimale(valeur):
 
 
 
+
 def get_annee(dataframe, colonne):
     ''' 
-   
+    création d'une colonne 'année' à partir de la date au format '01 janvier 1800' de la COLONNE d'un DATAFRAME.
+
     '''
     dataframe[colonne] = dataframe[colonne].astype('string')
     dataframe['annee'] = dataframe[colonne].str[-4:]
