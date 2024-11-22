@@ -16,110 +16,15 @@ import re
 import lxml.html as lh
 import io 
 
+import asyncio
+import aiohttp
+import pandas as pd
+import nest_asyncio
 
 # Manipulation des données
 import pandas as pd
 import numpy as np
 
-
-
-
-#############################################################
-#############################################################
-#############################################################
-############################################################# ????? PAS BESOIN DE CETTE PARTIE SI PAS NLP sur commentaires.....
-#############################################################
-#############################################################
-#############################################################
-
-
-def get_donnees(url, elements_a_scrapper, cols):   # Quand temps => mettre au propre cette fonction ! (si on l'utilise...sinon sup....)
-    """
-    Extraction des données d'une page web
-
-    ENTREES 
-    - url : url de la page concernée
-    - elements_a_scrapper (liste) : balise des éléments à scrapper
-    - cols (liste) : noms des colonnes dans le DataFrame final
-
-    SORTIE 
-    - DataFrame contenant les données scrappées d'une page
-
-
-    """
-    page = requests.get(url)
-
-
-    # Vérification que l'URL est fonctionnelle
-    if page.status_code != 200:
-        print(f"Erreur lors du chargement de l'URL : {page.status_code}")
-        return 
-    
-
-    # Objet arborescent pour extraire les éléments HTML
-    doc = lh.fromstring(page.content)
-
-
-    # Extraction des données  
-    content = []
-    for i in range(len(elements_a_scrapper)):
-        content.append(doc.xpath(elements_a_scrapper[i]))
-
-
-    # Création des DataFrame
-    df_liste = []
-    for j in range(len(elements_a_scrapper)):
-        tmp = pd.DataFrame([content[j][i].text_content().strip() for i in range(len(content[i]))], columns=[cols[j]])
-        tmp['key'] = tmp.index
-        df_liste.append(tmp)
-
-
-    # Jointure pour regrouper la note et le commentaire associé
-    table = df_liste[0]
-    for j in range(len(elements_a_scrapper)-1):
-        table = table.join(df_liste[j+1], on='key', how='left', lsuffix='_l', rsuffix='_r')  
-        del table['key_l']
-        del table['key_r']
-
-    return table.drop(columns=['key'])
-
-
-
-
-
-
-
-def get_pages_comm(nb_pages, url):
-    """ 
-    Récupération des commentaires et notes CLIENTS sur plusieurs pages d'UN FILM
-
-    ENTREES
-    - url : url de la page principale du film
-    - nb_pages : nombres de pages à scrapper
-
-
-    SORTIE 
-    - DataFrame contenant les données scrappées de TOUTES les pages demandées
-
-    """
-
-    table_finale = pd.DataFrame()
-
-
-    cols = ['Note', 'Date','Description' ]
-    elements_a_scrapper = ['//span[@class="stareval-note"]', \
-'//span[@class="review-card-meta-date light"]', \
-'//div[@class="content-txt review-card-content"]' ]
-    
-
-    uri_pages = '?page='
-
-    for i in range (nb_pages):
-
-        table_tmp = get_donnees(url + uri_pages + str(i+1), elements_a_scrapper, cols)
-        table_finale = pd.concat([table_finale, table_tmp], ignore_index=True)
-
-    return table_finale
 
 
 
@@ -380,6 +285,85 @@ def get_base_films(annee1, annee2):
 
     else:
         print('la première année doit être inférieure à la deuxième année')
+
+
+
+
+def get_carac_film(base_film):
+    async def fetch(session, url):
+        async with session.get(url) as response:
+            return await response.text()
+
+    async def main():
+        async with aiohttp.ClientSession() as session:
+            
+            # On utilise identifiant pour créer des liens
+            liens = ["https://www.allocine.fr/film/fichefilm_gen_cfilm=" + str(id) + ".html" for id in base_film['identifiant']]
+
+            tasks = [fetch(session, url) for url in liens]
+            responses = await asyncio.gather(*tasks)
+
+            film_charac = []
+
+            for i, response in enumerate(responses):
+
+                soup = BeautifulSoup(response, 'html.parser')
+
+                identifiant = re.findall(r'\d+', liens[i])[0]
+
+                release_element = soup.find('span', class_='meta-release-type')
+                release = release_element.text.strip() if release_element else ''
+
+                # Extrait les données de la fiche technique
+                fiche_tech = soup.find('section', class_='section ovw ovw-technical')
+                if fiche_tech:
+                    nationalite_span = fiche_tech.find('span', string='Nationalité')
+                    nationalite = nationalite_span.find_next_sibling('span').text.strip() if nationalite_span else ''
+
+                    date_sortie_dvd_span = fiche_tech.find('span', string='Date de sortie DVD')
+                    date_sortie_dvd = date_sortie_dvd_span.find_next_sibling('span').text.strip() if date_sortie_dvd_span else ''
+
+                    date_sortie_bluray_span = fiche_tech.find('span', string='Date de sortie Blu-ray')
+                    date_sortie_bluray = date_sortie_bluray_span.find_next_sibling('span').text.strip() if date_sortie_bluray_span else ''
+
+                    date_sortie_vod_span = fiche_tech.find('span', string='Date de sortie VOD')
+                    date_sortie_vod = date_sortie_vod_span.find_next_sibling('span').text.strip() if date_sortie_vod_span else ''
+
+                    type_film_span = fiche_tech.find('span', string='Type de film')
+                    type_film = type_film_span.find_next_sibling('span').text.strip() if type_film_span else ''
+
+                    budget_span = fiche_tech.find('span', string='Budget')
+                    budget = budget_span.find_next_sibling('span').text.strip() if budget_span else ''
+
+                    langues_span = fiche_tech.find('span', string='Langues')
+                    langues = langues_span.find_next_sibling('span').text.strip() if langues_span else ''
+
+                    format_production_span = fiche_tech.find('span', string='Format production')
+                    format_production = format_production_span.find_next_sibling('span').text.strip() if format_production_span else ''
+
+                    couleur_span = fiche_tech.find('span', string='Couleur')
+                    couleur = couleur_span.find_next_sibling('span').text.strip() if couleur_span else ''
+
+                    format_audio_span = fiche_tech.find('span', string='Format audio')
+                    format_audio = format_audio_span.find_next_sibling('span').text.strip() if format_audio_span else ''
+
+                    format_projection_span = fiche_tech.find('span', string='Format de projection')
+                    format_projection = format_projection_span.find_next_sibling('span').text.strip() if format_projection_span else ''
+
+                    num_visa_span = fiche_tech.find('span', string='N° de Visa')
+                    num_visa = num_visa_span.find_next_sibling('span').text.strip() if num_visa_span else ''
+                else:
+                    nationalite = date_sortie_dvd = date_sortie_bluray = date_sortie_vod = type_film = budget = langues = format_production = couleur = format_audio = format_projection = num_visa = ''
+
+                film_charac.append([identifiant, release, nationalite, date_sortie_dvd, date_sortie_bluray, date_sortie_vod, type_film, budget, langues, format_production, couleur, format_audio, format_projection, num_visa])
+
+            # Créer un DataFrame pandas avec les numéros de films
+            df_ws = pd.DataFrame(film_charac, columns=['identifiant', 'release', 'nationalite', 'date_sortie_dvd', 'date_sortie_bluray', 'date_sortie_vod', 'type_film', 'budget', 'langues', 'format_production', 'couleur', 'format_audio', 'format_projection', 'num_visa'])
+
+
+            return pd.merge(base_film, df_ws, on='identifiant')
+
+    return asyncio.run(main())
 
 
 
