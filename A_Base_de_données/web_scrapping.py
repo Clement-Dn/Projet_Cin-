@@ -208,7 +208,8 @@ def get_page_comparaison_notes(lien):
                 # Ajout de la ligne du film 
                 new_row = pd.DataFrame([[titre, identifiant, date, duree , auteur, spectateurs_note, presse_note, genres_list[0],genres_list[1],genres_list[2]]], columns = nom_colonnes)
                 table_finale = pd.concat([table_finale, new_row], ignore_index=True)
-        
+
+
     return table_finale
         
 
@@ -281,6 +282,8 @@ def get_base_films(annee1, annee2):
             
             table = pd.concat([table, table_intermediaire]) 
 
+        # Suppression des doublons éventuels    
+        table = table.drop_duplicates(subset='identifiant', keep='first')
         return table
 
     else:
