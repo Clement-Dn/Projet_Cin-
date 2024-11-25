@@ -280,6 +280,10 @@ def get_base_films(annee1, annee2):
             table_intermediaire = get_comparaison_notes(i)
             
             table = pd.concat([table, table_intermediaire]) 
+        
+        # Suppression des doublons éventuels    
+        table = table.drop_duplicates(subset='identifiant', keep='first')
+        return table
 
         return table
 
