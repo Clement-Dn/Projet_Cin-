@@ -1,3 +1,7 @@
+
+JEUDI 28 NOVEMBRE : GENERATION DE L'EXCEL DEFINITIF POUR LES ANALYSES
+
+
 # Projet_Cin-
 Git du projet pour le cours de Python pour la data science
 
