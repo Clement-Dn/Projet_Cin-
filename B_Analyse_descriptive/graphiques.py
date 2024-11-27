@@ -168,6 +168,7 @@ def evolution_f_h(dataframe, genre):
     
     """
 
+
     # Création de toutes les combinaisons (année,genre_ind) afin de pouvoir injecter par la suite les combinaisons manquantes     
     # Index de toutes les années et modalités
     all_years = dataframe['annee'].unique()
@@ -176,6 +177,8 @@ def evolution_f_h(dataframe, genre):
     combinaisons = pd.MultiIndex.from_product([all_years, all_genres], names=['annee', 'genre_ind'])
     combinaisons = pd.DataFrame(index=combinaisons).reset_index()
     combinaisons['initialisation'] = 0
+
+
 
 
 
@@ -205,6 +208,8 @@ def evolution_f_h(dataframe, genre):
 
 
 
+
+
 def graphique_h_f(dataframe):
     """ 
     
@@ -224,6 +229,7 @@ def graphique_h_f(dataframe):
         description='Genre du film :',
     )
 
+
     # Fonction de mise à jour
     def update_genre_film(change):
         if change['type'] == 'change' and change['name'] == 'value':
@@ -236,6 +242,7 @@ def graphique_h_f(dataframe):
 
     # Associer le bouton à la fonction de mise à jour
     menu_deroulant.observe(update_genre_film)
+
 
     display(menu_deroulant)
     evolution_f_h(dataframe, menu_deroulant.value)

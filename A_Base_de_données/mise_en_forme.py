@@ -66,3 +66,26 @@ def duree_en_minutes(duree):
 
         return heures * 60 + minutes
     return
+
+
+
+
+
+
+def equivalence_notes(dataframe):
+    '''
+    Renvoie le dataframe en donnant les équivalences en note.
+    '''
+   
+
+    equivalences = {
+        'Chef-d\'oeuvre': 5,
+        'Très bien': 4,
+        'Pas mal': 3,
+        'Pas terrible': 2,
+        'Très mauvais':1,
+    }
+
+    notes = dataframe.replace(equivalences)
+    
+    return notes

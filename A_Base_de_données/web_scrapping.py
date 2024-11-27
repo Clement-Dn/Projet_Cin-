@@ -308,6 +308,7 @@ def get_carac_film(base_film):
             responses = await asyncio.gather(*tasks)
 
             film_charac = []
+            avis_presse = []
 
             for i, response in enumerate(responses):
 
@@ -318,7 +319,7 @@ def get_carac_film(base_film):
                 release_element = soup.find('span', class_='meta-release-type')
                 release = release_element.text.strip() if release_element else ''
 
-                # Extrait les données de la fiche technique
+                # Extraction des données de la fiche technique
                 fiche_tech = soup.find('section', class_='section ovw ovw-technical')
                 if fiche_tech:
                     nationalite_span = fiche_tech.find('span', string='Nationalité')
@@ -361,11 +362,50 @@ def get_carac_film(base_film):
 
                 film_charac.append([identifiant, release, nationalite, date_sortie_dvd, date_sortie_bluray, date_sortie_vod, type_film, budget, langues, format_production, couleur, format_audio, format_projection, num_visa])
 
-            # Créer un DataFrame pandas avec les numéros de films
-            df_ws = pd.DataFrame(film_charac, columns=['identifiant', 'release', 'nationalite', 'date_sortie_dvd', 'date_sortie_bluray', 'date_sortie_vod', 'type_film', 'budget', 'langues', 'format_production', 'couleur', 'format_audio', 'format_projection', 'num_visa'])
+                # Extraction des notes de presse
+                reviews_press_section = None
+                for section in soup.find_all('section', class_='section ovw'):
+                    titlebar = section.find('div', class_='titlebar section-title')
+                    if titlebar and "Critiques Presse" in titlebar.get_text():
+                        reviews_press_section = section
+                        break
+                        
+                presse = []
+                if reviews_press_section:
+                    items = reviews_press_section.find_all('li', class_='item')
+                    for item in items:
+                        avis_span = item.find('span', class_='stareval-link')
+                        title_span = item.find('span', class_='stareval-link')
+                        if avis_span and title_span:
+                            avis = item.text.strip()
+                            title = title_span['title']
+                            presse.append((avis, title))
+
+                film_charac.append([identifiant, release, nationalite, num_visa])
+                avis_presse.append((identifiant, presse))
 
 
-            return pd.merge(base_film, df_ws, on='identifiant')
+                # DataFrame pour les notes de presse
+                all_sources = set()
+                for _, sources in avis_presse:
+                    for source, _ in sources:
+                        all_sources.add(source)
+
+                # Conversion en liste
+                all_sources_list = list(all_sources)
+                base_avis_presse = pd.DataFrame('', index=[identifiant for identifiant, _ in avis_presse], columns=all_sources_list)
+
+                # Remplir le DataFrame avec les avis de presse
+                for identifiant, sources in avis_presse:
+                    for source, title in sources:
+                        base_avis_presse.at[identifiant, source] = title
+
+
+            # DataFrame pandas avec les numéros de films
+            base_film_charac = pd.DataFrame(film_charac, columns=['identifiant', 'release', 'nationalite', 'date_sortie_dvd', 'date_sortie_bluray', 'date_sortie_vod', 'type_film', 'budget', 'langues', 'format_production', 'couleur', 'format_audio', 'format_projection', 'num_visa'])
+
+
+            return pd.merge(base_film, base_film_charac, on='identifiant'), base_avis_presse
 
     return asyncio.run(main())
 
