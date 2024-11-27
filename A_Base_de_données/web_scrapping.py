@@ -381,7 +381,6 @@ def get_carac_film(base_film):
                             title = title_span['title']
                             presse.append((avis, title))
 
-                film_charac.append([identifiant, release, nationalite, num_visa])
                 avis_presse.append((identifiant, presse))
 
 
