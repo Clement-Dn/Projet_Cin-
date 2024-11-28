@@ -89,3 +89,69 @@ def equivalence_notes(dataframe):
     notes = dataframe.replace(equivalences)
     
     return notes
+
+
+    
+
+
+#############################################################
+#############################################################
+#############################################################
+############################################################# Base prenom et récupération du genre
+#############################################################
+#############################################################
+#############################################################
+
+
+def base_prenom():
+    """  
+
+    Récupération sur data.gouv d'une BDD contenant 11 627 prénoms de plusieurs pays, et 
+    pour lesquels leur genre (m/f/m,f/f,m est indiqué)   
+    
+    
+    """
+
+    # importation du csv avec 11 627 prénoms de différents pays
+    url_prenom = "https://www.data.gouv.fr/fr/datasets/r/55cd803a-998d-4a5c-9741-4cd0ee0a7699"
+        
+    try:
+        response = requests.get(url_prenom)
+
+        # Vérification si la la requête a réussi
+        response.raise_for_status()  #
+
+        # Lire le fichier CSV à partir de la réponse
+        table = pd.read_csv(io.StringIO(response.text), delimiter=';', encoding='utf-8')
+
+    except Exception as e:
+        print(f"Erreur inattendue : {e}")
+    
+    nom_colonnes = {
+    '01_prenom': 'prenom',
+    '02_genre': 'genre_ind',
+    '03_langage': 'langage_ind'
+    }
+
+    table = table.rename(columns=nom_colonnes)
+
+    return table
+    
+
+
+def get_genre_individuel(dataframe, colonne):
+    """  
+    
+    Création d'une colonne 'prenom' à partir de la COLONNE d'un DATAFRAME. + ajout de l'argument de position (pour ajout base CNC des réalisateurs)
+    
+    """
+    base_prenom_genre = base_prenom()
+    base_prenom_genre = base_prenom_genre.drop(columns=['04_fréquence','langage_ind'])
+
+    # transformation du prénom en minuscule afin de pouvoir merger sans problème de Majuscule
+    dataframe['prenom'] = dataframe[colonne].str.split().str[0].str.lower()
+
+    table = pd.merge(base_prenom_genre, dataframe, on='prenom', how='inner')
+    table = table.drop(columns=['prenom'])
+    
+    return table
