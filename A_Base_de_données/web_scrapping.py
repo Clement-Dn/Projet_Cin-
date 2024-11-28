@@ -1,55 +1,39 @@
-
-
-
-##########################   Fonctions pour récupérer différentes informations sur internet    ###########################
-##########################################################################################################################
-##########################################################################################################################
-
-
-
-# Importations des librairies
-
-# Webscrapping
 import requests
 from bs4 import BeautifulSoup
 import re
 import lxml.html as lh
-import io 
-
+import io
 import asyncio
 import aiohttp
 import pandas as pd
 import nest_asyncio
-
-# Manipulation des données
 import pandas as pd
 import numpy as np
+import csv
 
+# Liste des 55 journaux
+journaux = [
+    "L’Écran fantastique", "Les Cahiers du cinéma", "Cinemateaser", "Les Inrocks", "Mad Movies", "Positif", "Première", "Télérama",
+    "Transfuge", "À voir à lire", "Bande à part", "Critikat", "Culturebox", "Culturopoing", "Ecran large", "Filmsactu", "Journal du geek",
+    "La Septième obsession", "LCI", "Les Fiches du cinéma", "IGN France", "20 minutes", "Charlie Hebdo", "CNews", "Les Dernières Nouvelles d’Alsace",
+    "Les Echos", "L’Humanité", "La Croix", "La Voix du nord", "Le Dauphiné Libéré", "Le Figaro", "Le JDD", "Le Monde", "Le Parisien",
+    "Le Point", "Libération", "Marianne", "Nouvel Obs", "Ouest France", "Sud-Ouest", "Biba", "Closer", "Elle", "Femme actuelle",
+    "GQ", "Marie-Claire", "Paris Match", "Public", "Rolling Stone", "Télé 2 semaines", "Télé 7 jours", "Téléloisirs", "Voici"
+]
 
+def get_liens(annee, genre=None):
+    """
+    1 - Construction du lien menant à la page du site avec tous les films ayant le genre et
+    l'année demandé.
+    2 - Création du lien des différentes pages.
+    3 - Extraction du lien des films
+    4 - Extraction des infos sur les films
 
-
-
-
-
-#############################################################
-#############################################################
-#############################################################
-#############################################################  Récupération d'une série de films avec leurs notes associées 
-#############################################################
-#############################################################
-#############################################################
-
-
-
-def get_lien(annee, genre=None):
-    """ 
-    Construction du lien de la page d'accueil d'une liste de films :
-
-    ENTREES  
-    - année (int): année considérée des films (entre 2010 et 2029)
+    ENTREES
+    - année (int): année de production des films (entre 2010 et 2029)
     - genre : si non mentionné, tous les genres confondus sont considérés
 
-    SORTIE 
+    SORTIE
     - lien html
 
     """
@@ -62,16 +46,14 @@ def get_lien(annee, genre=None):
     else:
         print(f"L'annee doit être un entier")
         return
-    
+
     # récupération de la décennie correspondant sur le site AlloCine
     decennie = '2020'
 
     if annee < 2020:
         decennie = '2010'
-     
-    
-    annee = str(annee)
 
+    annee = str(annee)
 
     # Equivalence numérique du genre recherché
     genre_numerique = ''
@@ -82,242 +64,130 @@ def get_lien(annee, genre=None):
         "action": '13025',
         "animation": '13026',
         "aventure": '13001',
-        "comedie" : '13005', 
+        "comedie" : '13005',
         "drame": '13008',
         }
         if genre in genre_disponible:
             genre_numerique = genre_disponible[genre]
-            
+
         else:
             print(f"Le genre '{genre}' n'est pas disponible.")
             return
-   
+
         # Construction de l'URL
-        return 'https://www.allocine.fr/films/genre-' + genre_numerique + '/decennie-' + decennie + '/annee-' + annee + '/'
-    
+        lien_maitre = 'https://www.allocine.fr/films/genre-' + genre_numerique + '/decennie-' + decennie + '/annee-' + annee + '/'
+
     else:
-        return 'https://www.allocine.fr/films/decennie-' + decennie + '/annee-' + annee + '/'
+        lien_maitre = 'https://www.allocine.fr/films/decennie-' + decennie + '/annee-' + annee + '/'
 
-
-
-
-def get_page_comparaison_notes(lien):
-    """ 
-    Récupération des notes Presse et notes Spectateurs pour tous les films se trouvant sur une page
-
-    ENTREES
-    - lien : lien html où les données sont à récupérer
-
-    SORTIE 
-    - Dataframe avec les notes moyennes des spectateurs et de la presse, ainsi que la durée, date et genre des films
-
-    """
-    try: 
-        code_page = requests.get(lien)
-
-        # Vérification que la requête est réussie
-        if code_page.status_code != 200:
-            print(f"Erreur lors du chargement de l'URL : {code_page.status_code}")
-            return "fini"
-    
-    except Exception as e:
-        print(f"Erreur lors du chargement : {e}")
-
-        return "fini"
-
-
+    # Ws du nombre de page
+    code_page = requests.get(lien_maitre)
     balises = BeautifulSoup(code_page.text, 'html.parser')
-    films = balises.find_all('div', class_='card entity-card entity-card-list cf')
+    liens = balises.find_all('a', href = True)
+    nav = balises.find('nav', {"class" : 'pagination cf'})
+    spans = nav.find_all('span')
+    dernier = spans[-1].get_text()
+    dernier = int(dernier)
+    liens_pages = [f"{lien_maitre+"?page="}{i}" for i in range(1, dernier + 1)]
 
+    # Fonction asynchrone pour récupérer les liens d'une page
+    async def fetch_links(session, url):
+        try:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    content = await response.text()
+                    soup = BeautifulSoup(content, 'html.parser')
+                    links = [a['href'] for a in soup.find_all('a', class_='meta-title-link')]
+                    return links
+                else:
+                    print(f"Failed to retrieve {url}")
+                    return []
+        except Exception as e:
+            print(f"Error fetching {url}: {e}")
+            return []
+    # Fonction principale pour récupérer les liens de toutes les pages
 
-    nom_colonnes = ['titre','identifiant','date', 'durée','auteur', 'spectateur', 'presse', 'genre1','genre2','genre3']
+    async def main(liens_pages):
+        async with aiohttp.ClientSession() as session:
+            tasks = []
+            for url in liens_pages:
+                tasks.append(fetch_links(session, url))
+            results = await asyncio.gather(*tasks)
+            # Aplatir la liste des résultats
+            flattened_results = [link for sublist in results for link in sublist]
+            return flattened_results
 
-    table_finale = pd.DataFrame(columns=nom_colonnes)
+    # Exécution de la fonction principale
+    results = asyncio.run(main(liens_pages))
 
-    # Boucle pour chaque film présent sur la page
-    for film in films:
-            
+    # Création du nouveau DataFrame avec les liens récupérés
+    new_data = pd.DataFrame({
+        'links': results
+    })
+    new_data['links'] = new_data['links'].apply(lambda x: "https://www.allocine.fr" + x)
+    print(len(new_data))
 
-        meta_body = film.find('div', class_='meta-body-item meta-body-info')
+    return new_data
 
-        if meta_body:
-
-
-            # Extraction des notes
-            avis = film.find_all('div', class_='rating-item')
-            presse_note = None
-            spectateurs_note = None
-
-            for notation in avis:
-                title = notation.find('span', class_='rating-title')
-                title_text = title.get_text(strip=True) if title else None
-
-                note = notation.find('span', class_='stareval-note')
-                note_text = note.get_text(strip=True) if note else None
-                
-                if title_text == "Presse":
-                    presse_note = note_text
-                elif title_text == "Spectateurs":
-                    spectateurs_note = note_text
-            
-            # Prise en compte des autres éléments que si la note SPECTATEURS et la note PRESSE sont présentes
-            if presse_note is not None and spectateurs_note is not None:
-            
-
-                # Extraction de la date
-                date = ""
-                date_span = meta_body.find('span', class_='date')
-                date = date_span.get_text(strip=True) if date_span else None   
-
-
-                # Extraction de la durée
-                duree = ""
-                duree_text = meta_body.get_text(strip=True)
-                duree_h_min = re.search(r'(\d+h \d+min)', duree_text)
-                duree = duree_h_min.group(1) if duree_h_min else None   
-
-
-                # Extraction de l'auteur
-                auteur = ""
-                meta_direction = film.find('div', class_='meta-body-item meta-body-direction')
-                if meta_direction:
-                    auteur_texte = meta_direction.find('span', class_='dark-grey-link')
-                    auteur = auteur_texte.get_text(strip=True) if auteur_texte else None   
-
-
-                # Extraction des genres du film
-                genres_list = ['', '', '']
-                genre_index = 0
-                for genre in meta_body.find_all('span', class_='dark-grey-link'):
-                    genre_text = genre.get_text(strip=True) if genre else None
-                    if genre_index < 3:
-                        genres_list[genre_index] = genre_text
-                        genre_index += 1
-
-
-                # Extraction du titre et de l'identifiant
-                titre = ""
-                identifiant = ""
-                balise_titre = film.find('a', class_='meta-title-link')
-                titre = balise_titre.get_text(strip=True) if balise_titre else None
-
-                lien_film = balise_titre['href']
-                numero = re.search(r'cfilm=(\d+)', lien_film)
-                identifiant = numero.group(1)
-
-                # Ajout de la ligne du film 
-                new_row = pd.DataFrame([[titre, identifiant, date, duree , auteur, spectateurs_note, presse_note, genres_list[0],genres_list[1],genres_list[2]]], columns = nom_colonnes)
-                table_finale = pd.concat([table_finale, new_row], ignore_index=True)
-
-
-    return table_finale
-        
+    # Pour chaque page on ws les liens des films
 
 
 
-
-def get_comparaison_notes(annee, genre=None):
-    """ 
-    Notes Presse et notes Spectateurs pour divers films de périmètre (annee, genre)
-
-    ENTREES
-    - année : possible seulement de 2010 à 2029
-    - nb_pages : nombre de pages de films considérés
-    - genre : si non mentionné, tous les genres confondus sont récupérés
-
-
-    SORTIE 
-    - Dataframe avec les films qui ont nécessairement les notes moyennes des spectateurs et de la presse.
-
-    """
-    url = get_lien(annee, genre)
-
-    if not url:
-        return
-
-    table_finale = pd.DataFrame()
-
-    # Récupération des données en itérant sur le nombre de pages souhaitées
-    uri_pages = '?page='
-
-    i = 0
-    valide = True
-
-    while valide == True:
-    
-        table = get_page_comparaison_notes(url + uri_pages + str(i+1))
-        i = i + 1
-
-        if not table.empty:
-            table_finale = pd.concat([table_finale, table], ignore_index=True)
-        else:
-            valide = False
-
-    print("nombre de films récupérés : ", len(table_finale))
-
-    return table_finale
-
-
-
-
-def get_base_films(annee1, annee2):
-    """ 
-    Récupérer les données de films entre l'annee1 et l'annee2
-
-    """
-    if not isinstance(annee1, int) or not isinstance(annee2, int):
-        print("Les années doivent être des entiers")
-    
-    if annee2 > 2029 or annee1 < 2010:
-        print(f"{annee1},{annee2} n'est pas valide (intervalle doit être compris entre 2010 et 2029)")
-        return
-    
-    
-    if annee1 <= annee2:
-
-        table = pd.DataFrame()
-        for i in range(annee1, annee2 + 1):
-
-            table_intermediaire = get_comparaison_notes(i)
-            
-            table = pd.concat([table, table_intermediaire]) 
-
-        # Suppression des doublons éventuels    
-        table = table.drop_duplicates(subset='identifiant', keep='first')
-        return table
-
-    else:
-        print('la première année doit être inférieure à la deuxième année')
-
-
-
-
-def get_carac_film(base_film):
+def get_carac_film(base_liens):
     async def fetch(session, url):
         async with session.get(url) as response:
             return await response.text()
 
     async def main():
         async with aiohttp.ClientSession() as session:
-            
+
             # On utilise identifiant pour créer des liens
-            liens = ["https://www.allocine.fr/film/fichefilm_gen_cfilm=" + str(id) + ".html" for id in base_film['identifiant']]
-
-            tasks = [fetch(session, url) for url in liens]
+            tasks = [fetch(session, url) for url in base_liens["links"]]
             responses = await asyncio.gather(*tasks)
-
             film_charac = []
-
+            j = 1
             for i, response in enumerate(responses):
-
+                j = j + 1
+                print(j)
                 soup = BeautifulSoup(response, 'html.parser')
 
-                identifiant = re.findall(r'\d+', liens[i])[0]
+                identifiant = re.search(r'\d+', base_liens["links"][i]).group()
 
                 release_element = soup.find('span', class_='meta-release-type')
                 release = release_element.text.strip() if release_element else ''
 
-                # Extrait les données de la fiche technique
+                duration_span = soup.find('span', class_='spacer')
+                if duration_span:
+                    duration = duration_span.find_next_sibling(text=True).strip()
+                else:
+                    duration = 'N/A'
+
+                # Extraire les genres (maximum 3 genres)
+                # Trouver tous les liens avec la classe 'dark-grey-link'
+                meta_body = soup.find('div',class_='meta-body-item meta-body-info')
+                genres = meta_body.find_all('span', class_='dark-grey-link')
+                # Filtrer les liens pour ne garder que ceux avec un href de la forme '/films/genre-'
+                genre_list = [genre.text.strip() for genre in genres]
+                genre1 = genre_list[0] if len(genre_list) > 0 else ''
+                genre2 = genre_list[1] if len(genre_list) > 1 else ''
+                genre3 = genre_list[2] if len(genre_list) > 2 else ''
+
+                # Extraire le réalisateur
+                producer_span = soup.find('div', class_='meta-body-item meta-body-direction meta-body-oneline')
+                producer_a = producer_span.find('span',class_='dark-grey-link') if producer_span else None
+                director = producer_a.text.strip() if producer_a else 'N/A'
+
+                # Extract press rating and number of reviews
+                press_rating_element = soup.find('div', class_='rating-item-content')
+                press_rating = press_rating_element.find('span', class_='stareval-note').text if press_rating_element else ''
+                press_reviews = press_rating_element.find('span', class_='stareval-review').text.split()[0] if press_rating_element else ''
+                # Extract spectators rating and number of reviews
+                spectators_rating_element = soup.find_all('div', class_='rating-item-content')
+                spectators_rating = spectators_rating_element[1].find('span', class_='stareval-note').text if len(spectators_rating_element) > 1 and spectators_rating_element[1] else ''
+                spectators_reviews_element = spectators_rating_element[1].find('span', class_='stareval-review') if len(spectators_rating_element) > 1 and spectators_rating_element[1] else None
+                spectators_reviews = spectators_reviews_element.text.split()[0] if spectators_reviews_element else ''
+
+                # Extraction des données de la fiche technique
                 fiche_tech = soup.find('section', class_='section ovw ovw-technical')
                 if fiche_tech:
                     nationalite_span = fiche_tech.find('span', string='Nationalité')
@@ -358,90 +228,48 @@ def get_carac_film(base_film):
                 else:
                     nationalite = date_sortie_dvd = date_sortie_bluray = date_sortie_vod = type_film = budget = langues = format_production = couleur = format_audio = format_projection = num_visa = ''
 
-                film_charac.append([identifiant, release, nationalite, date_sortie_dvd, date_sortie_bluray, date_sortie_vod, type_film, budget, langues, format_production, couleur, format_audio, format_projection, num_visa])
+                # Extraction des critiques de la presse
+                press_reviews_section = soup.find('div', class_='row reviews-press-list gd gd-xs-1 gd-m-2')
+                press_reviews_list = {journal: '' for journal in journaux}
+                if press_reviews_section:
+                    items = press_reviews_section.find_all('li', class_='item')
+                    # Parcourir chaque élément et extraire le journal et la critique
+                    for item in items:
+                        # Trouver l'élément <span> avec la classe "stareval-link-info"
+                        journal_span = item.find('span', class_='stareval-link-info')
+                        # Trouver l'élément <span> avec l'attribut "title"
+                        critique_span = item.find('span', attrs={'title': True})
 
-            # Créer un DataFrame pandas avec les numéros de films
-            df_ws = pd.DataFrame(film_charac, columns=['identifiant', 'release', 'nationalite', 'date_sortie_dvd', 'date_sortie_bluray', 'date_sortie_vod', 'type_film', 'budget', 'langues', 'format_production', 'couleur', 'format_audio', 'format_projection', 'num_visa'])
+                        if journal_span and critique_span:
+                            journal = journal_span.get_text(strip=True)
+                            critique = critique_span['title']
+                            if journal in press_reviews_list:
+                                press_reviews_list[journal] = critique
 
+                film_charac.append([
+                    identifiant, release, nationalite, date_sortie_dvd, date_sortie_bluray, date_sortie_vod,
+                    type_film, budget, langues, format_production, couleur, format_audio, format_projection,
+                    num_visa, duration, genre1, genre2, genre3, director, press_rating, press_reviews, spectators_rating, spectators_reviews
+                ] + list(press_reviews_list.values()))
 
-            return pd.merge(base_film, df_ws, on='identifiant')
+            return film_charac
 
     return asyncio.run(main())
 
+df = get_liens(annee = 2016)
+dg = get_carac_film(df)
 
+# Write to CSV file
+with open('film_charac_2016.csv', mode='w', newline='', encoding='utf-8') as file:
+    writer = csv.writer(file)
+    # Write the header
+    writer.writerow([
+        'Identifiant', 'Release', 'Nationalite', 'Date_sortie_dvd', 'Date_sortie_bluray', 'Date_sortie_vod',
+        'Type_film', 'Budget', 'Langues', 'Format_production', 'Couleur', 'Format_audio', 'Format_projection',
+        'Num_visa', 'Duration', 'Genre1', 'Genre2', 'Genre3', 'Directors', 'Producer', 'Press_rating', 'Press_reviews', 'Spectators_rating', 'Spectators_reviews'
+    ] + journaux)
+    # Write the data
+    writer.writerows(dg)
 
-
-
-#############################################################
-#############################################################
-#############################################################
-############################################################# Base prenom et récupération du genre
-#############################################################
-#############################################################
-#############################################################
-
-
-def base_prenom():
-    """  
-
-    Récupération sur data.gouv d'une BDD contenant 11 627 prénoms de plusieurs pays, et 
-    pour lesquels leur genre (m/f/m,f/f,m est indiqué)   
-    
-    
-    """
-
-    # importation du csv avec 11 627 prénoms de différents pays
-    url_prenom = "https://www.data.gouv.fr/fr/datasets/r/55cd803a-998d-4a5c-9741-4cd0ee0a7699"
-        
-    try:
-        response = requests.get(url_prenom)
-
-        # Vérification si la la requête a réussi
-        response.raise_for_status()  #
-
-        # Lire le fichier CSV à partir de la réponse
-        table = pd.read_csv(io.StringIO(response.text), delimiter=';', encoding='utf-8')
-
-    except Exception as e:
-        print(f"Erreur inattendue : {e}")
-    
-    nom_colonnes = {
-    '01_prenom': 'prenom',
-    '02_genre': 'genre_ind',
-    '03_langage': 'langage_ind'
-    }
-
-    table = table.rename(columns=nom_colonnes)
-
-    return table
-    
-
-
-def get_genre_individuel(dataframe, colonne):
-    """  
-    
-    Création d'une colonne 'prenom' à partir de la COLONNE d'un DATAFRAME. + ajout de l'argument de position (pour ajout base CNC des réalisateurs)
-    
-    """
-    base_prenom_genre = base_prenom()
-    base_prenom_genre = base_prenom_genre.drop(columns=['04_fréquence','langage_ind'])
-
-    # transformation du prénom en minuscule afin de pouvoir merger sans problème de Majuscule
-    dataframe['prenom'] = dataframe[colonne].str.split().str[0].str.lower()
-
-    table = pd.merge(base_prenom_genre, dataframe, on='prenom', how='inner')
-    table = table.drop(columns=['prenom'])
-    
-    return table
-
-
-
-#############################################################
-#############################################################
-#############################################################
-#############################################################  AUTRES RECUPERATOIN DE DONNEES ? 
-#############################################################
-#############################################################
-#############################################################
-
+print("CSV file 'film_charac.csv' has been created successfully.")
 
