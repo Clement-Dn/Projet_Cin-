@@ -1,13 +1,14 @@
 
 
-
 # Importations des librairies
 import pandas as pd
 import numpy as np
+import requests
+import io
 
 
 
-
+#############################################################     cleaning de certaines informations
 
 
 
@@ -25,6 +26,9 @@ def mise_en_forme_decimale(valeur):
 
 
 
+
+
+#############################################################  Création des variables : annee et duree (en minutes)
 
 
 def get_annee(dataframe, colonne):
@@ -69,6 +73,7 @@ def duree_en_minutes(duree):
 
 
 
+############################################################# Traduction en valeur numérique des notes (Très bien, Pas mal, etc)
 
 
 
@@ -94,13 +99,10 @@ def equivalence_notes(dataframe):
     
 
 
-#############################################################
-#############################################################
-#############################################################
+
+
 ############################################################# Base prenom et récupération du genre
-#############################################################
-#############################################################
-#############################################################
+
 
 
 def base_prenom():
