@@ -95,6 +95,11 @@ def plot_spec_vs_presse(dataframe, genre):
     plt.text(0.95, 0.65, f'Moyenne des spectateurs: {moy_spect:.2f}', transform=plt.gcf().transFigure, horizontalalignment='left', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
 
 
+    # Ajout du coefficient de corrélation linéaire
+    coefficient_corr = dataframe['spectateur'].corr(dataframe['presse'])
+    plt.text(0.95, 0.45, f'Coefficient de corrélation linéaire: {coefficient_corr:.3f}', transform=plt.gcf().transFigure, horizontalalignment='left', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
+
+
 
 
 

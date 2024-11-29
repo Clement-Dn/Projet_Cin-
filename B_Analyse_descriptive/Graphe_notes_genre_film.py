@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
 import seaborn as sns
-import pandas as pd
+
 
 
 
