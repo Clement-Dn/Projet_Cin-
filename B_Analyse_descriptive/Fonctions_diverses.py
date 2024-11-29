@@ -3,6 +3,9 @@
 # Importation des librairies
 import pandas as pd
 from IPython.display import display, HTML
+from statsmodels.formula.api import ols
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 
@@ -50,7 +53,7 @@ def comparaison_preferences(dataframe):
 
 
 
-    def p_value_anova_h_vs_f(dataframe):
+def p_value_anova_h_vs_f(dataframe):
     '''
         retourne la p-value du test d'ANOVA pour les notations par rapport au genre des réalisateurs
     '''
@@ -60,3 +63,19 @@ def comparaison_preferences(dataframe):
     anova_table = sm.stats.anova_lm(model, typ=2)
 
     return(f'P-value du test ANOVA: {anova_table.iloc[0]['PR(>F)']:.3f}')
+
+
+
+
+
+def boxplot_duree(dataframe, variable):
+    '''
+
+    '''
+    plt.figure(figsize=(12, 8))
+    sns.boxplot(x=variable, y='spectateur', data=dataframe)
+    plt.title('Distribution des notes des spectateurs par catégorie de durée')
+    plt.xlabel('Durée en minutes')
+    plt.ylabel('Note des spectateurs')
+    plt.xticks(rotation=45) 
+    plt.show()
