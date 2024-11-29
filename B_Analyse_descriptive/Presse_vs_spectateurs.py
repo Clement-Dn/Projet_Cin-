@@ -7,6 +7,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 import ipywidgets as widgets
 import matplotlib.pyplot as plt
+from IPython.display import display, clear_output
 
 
 
@@ -52,19 +53,19 @@ def get_degre_optimal(X, Y, degre_max=6, cv=5):
 
 
 
-
 def plot_spec_vs_presse(dataframe, genre):
     """ 
-    
+    Afficher un nuage de point avec les notes de la presse (en ordonnées) et des spectateurs (en abscisses), pour les films
+    d'un GENRE spécifique.
     
     """
 
     if genre != 'Tous':
         dataframe = dataframe[dataframe['genre1']== genre]
-        titre = f'Répartition des notes de presse et spectateurs pour les films {genre}'
+        titre = f'Répartition des notes de presse VS spectateurs pour les films {genre}'
             
     else:
-        titre = 'Répartition des notes de presse et spectateurs sur tous les films'
+        titre = 'Répartition des notes de presse VS spectateurs pour tous les films'
 
     plt.figure(figsize=(6, 5))
     sns.scatterplot(data=dataframe, x='spectateur', y='presse', alpha=0.7, linewidth=0.5, legend = False)
@@ -76,6 +77,22 @@ def plot_spec_vs_presse(dataframe, genre):
     plt.plot([0, 5], [0, 5], 'k--', label='x = y') 
     plt.xlim(0, 5)
     plt.ylim(0, 5)
+    plt.xlabel('Notes des spectateurs')
+    plt.ylabel('Note de la presse')
+    plt.title(label = titre)
+
+    
+    # Ajout du nombre de films pris en compte ainsi que les moyennes de notes respectives de la presse et des spectateurs
+    nb_films = len(dataframe)
+    moy_spect = dataframe['spectateur'].mean()
+    moy_presse = dataframe['presse'].mean()
+
+    if genre == 'Tous':
+        genre = ''
+
+    plt.text(0.95, 0.75, f'Nombre de films {genre} : {nb_films}', transform=plt.gcf().transFigure, horizontalalignment='left', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
+    plt.figtext(0.95, 0.70, f'Moyenne de la presse: {moy_presse:.2f}', ha='left', va='top', bbox=dict(facecolor='white', alpha=0.5))
+    plt.text(0.95, 0.65, f'Moyenne des spectateurs: {moy_spect:.2f}', transform=plt.gcf().transFigure, horizontalalignment='left', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
 
 
 
@@ -83,7 +100,9 @@ def plot_spec_vs_presse(dataframe, genre):
 
 def graphique_presse_vs_spect(dataframe):
     """
-
+    Crée une interface avec un menus déroulants pour sélectionner le genres de films 
+    dont on veut visualiser le nuage de points des notes de presse en fonction 
+    des notes des spectateurs.
 
     """
 
