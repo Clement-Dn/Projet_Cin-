@@ -6,6 +6,7 @@ from IPython.display import display, HTML
 from statsmodels.formula.api import ols
 import matplotlib.pyplot as plt
 import seaborn as sns
+import statsmodels.api as sm
 
 
 
