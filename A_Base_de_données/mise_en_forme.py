@@ -28,7 +28,7 @@ def mise_en_forme_decimale(valeur):
 
 
 
-#############################################################  Création des variables : annee et duree (en minutes)
+#############################################################  Création des variables : annee, duree (en minutes) et catégorisation des durées
 
 
 def get_annee(dataframe, colonne):
@@ -70,6 +70,21 @@ def duree_en_minutes(duree):
 
         return heures * 60 + minutes
     return
+
+
+
+
+
+def categorisation_duree(dataframe, variable):
+    ''' 
+
+    '''
+        
+    bins = range(0, int(dataframe[variable].max()) + 10, 10)
+    labels = [f'{i}-{i+9}' for i in bins[:-1]]
+    dataframe['duree_cat'] = pd.cut(dataframe[variable], bins=bins, labels=labels, right=False)
+
+    return dataframe
 
 
 

@@ -7,6 +7,7 @@ Git du projet pour le cours de Python pour la data science
 
 
 
+
 # Problématiques (idées)
 
 - Quelles caractéristiques des films font qu'ils sont les mieux notés ?
