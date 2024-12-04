@@ -155,3 +155,28 @@ def get_genre_individuel(dataframe, colonne):
     table = table.drop(columns=['prenom'])
     
     return table
+
+import pandas as pd
+import re
+
+def get_laureat_nomination(colonne):
+    """
+    Création de deux colonnes: nombres de nomination & lauréats.
+    """
+    if not isinstance(colonne, str):
+        return 0, 0
+
+    # Fonction pour extraire le nombre de prix et de nominations
+    prix = re.search(r'(\d+) prix', colonne)
+    nominations = re.search(r'(\d+) nominations', colonne)
+
+    prix = int(prix.group(1)) if prix else 0
+    nominations = int(nominations.group(1)) if nominations else 0
+
+    return prix, nominations
+    # Pour vérifier si la fonction fonctionne.
+        # Lire le fichier CSV dans un DataFrame
+        #data = pd.read_csv('/home/onyxia/work/Projet_Cin-/A_Base_de_données/base_final_recompenses.csv')
+        # Appliquer la fonction
+        #data[['prix', 'nominations']] = data['recompenses'].apply(lambda x: pd.Series(get_laureat_nomination(x)))
+        #print(data.head())
