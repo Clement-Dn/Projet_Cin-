@@ -1,6 +1,8 @@
 
 
 # Importations des librairies
+from joblib import Parallel, delayed
+from unidecode import unidecode
 import pandas as pd
 import numpy as np
 import requests
@@ -28,7 +30,7 @@ def mise_en_forme_decimale(valeur):
 
 
 
-#############################################################  Création des variables : annee et duree (en minutes)
+#############################################################  Création des variables : annee, duree (en minutes) et catégorisation des durées
 
 
 def get_annee(dataframe, colonne):
@@ -70,6 +72,21 @@ def duree_en_minutes(duree):
 
         return heures * 60 + minutes
     return
+
+
+
+
+
+def categorisation_duree(dataframe, variable):
+    ''' 
+
+    '''
+        
+    bins = range(0, int(dataframe[variable].max()) + 10, 10)
+    labels = [f'{i}-{i+9}' for i in bins[:-1]]
+    dataframe['duree_cat'] = pd.cut(dataframe[variable], bins=bins, labels=labels, right=False)
+
+    return dataframe
 
 
 
@@ -140,7 +157,6 @@ def base_prenom():
     return table
     
 
-
 def get_genre_individuel(dataframe, colonne):
     """  
     
@@ -150,10 +166,91 @@ def get_genre_individuel(dataframe, colonne):
     base_prenom_genre = base_prenom()
     base_prenom_genre = base_prenom_genre.drop(columns=['04_fréquence','langage_ind'])
 
+
     # transformation du prénom en minuscule afin de pouvoir merger sans problème de Majuscule
     dataframe['prenom'] = dataframe[colonne].str.split().str[0].str.lower()
 
-    table = pd.merge(base_prenom_genre, dataframe, on='prenom', how='inner')
+    table = pd.merge(base_prenom_genre, dataframe, on='prenom', how='right')
     table = table.drop(columns=['prenom'])
     
     return table
+
+
+##########################################################################################  Traitement base CNC
+
+
+
+
+
+def categorisation_devis(dataframe):
+    ''' 
+    categorisation du devis, en reprenant les critères de l'article
+    [0,2000000] = "<2 m "
+    [2000000,4000000] = "entre 2 et 4 m"
+    [4000000,7000000] = "entre 4 et 7 m"
+    [7000000,16000000] = "> à 7 m"
+
+    '''
+    dataframe["type_de_devis"] = pd.cut(dataframe.devis, [0,2000000,4000000,7000000, 16000000], right=False)
+    dataframe["type_de_devis"]= dataframe["type_de_devis"].cat.rename_categories(["<2 m ", "entre 2 et 4 m", "entre 4 et 7 m", "> à 7 m"])
+    
+    return dataframe
+
+
+
+
+def get_genre_prenom(prenom):
+    """
+    Retourne le genre associé au prénom donné
+
+    """
+    # Import de la base prénom
+    base_prenom_genre = base_prenom()
+    base_prenom_genre = base_prenom_genre.drop(columns=['04_fréquence', 'langage_ind'])
+    base_prenom_genre['prenom'] = base_prenom_genre['prenom'].astype(str)
+    base_prenom_genre['prenom'] = base_prenom_genre['prenom'].apply(unidecode)
+    
+    # Transformer le prénom en minuscule afin de pas avoir de pb de casse avec les majuscules
+    prenom_formate = prenom.lower()
+    prenom_formate = unidecode(prenom_formate)
+
+    # Recherche du prénom dans la base
+    genre = base_prenom_genre[base_prenom_genre['prenom'].str.lower() == prenom_formate]
+
+    if not genre.empty:
+        return genre['genre_ind'].values[0]
+    else:
+        return 'non trouvé'
+
+
+def genres_multiple(liste):
+    """
+    A partir d'une liste de prénom + nom, retourne :
+    - si une seule persone => si femme f, si homme h
+    - si plusieurs personnes => mutiple + si il y a au moins une femme (f_coréalisé vs m_coréalisé)
+
+    """
+    if liste != None:
+        prenoms = [individu.split()[-1] for individu in liste]
+
+        if len(prenoms) > 1:
+            for prenom in prenoms:
+                if get_genre_prenom(prenom) == 'f':
+                    return 'f_coréalisé'
+                    return prenom
+            return 'm_coréalisé'
+
+        return get_genre_prenom(prenoms[0])
+        
+    return 'pas de realisateur'
+
+
+def ajout_genre_multiple(dataframe, colonne):
+
+    # # transformation de chaque élément de la colonne en liste pour faciliter la recherche de(s) genre(s)
+    dataframe[colonne] = dataframe[colonne].str.split('/')
+
+    # Parallélisation des CPU car sinon cela prend plusieurs minutes de parcourir les milliers de lignes
+    dataframe['genre_ind'] = Parallel(n_jobs=-1)(delayed(genres_multiple)(realisateur) for realisateur in dataframe[colonne])
+
+    return dataframe
