@@ -168,7 +168,7 @@ def get_genre_individuel(dataframe, colonne):
     # transformation du prénom en minuscule afin de pouvoir merger sans problème de Majuscule
     dataframe['prenom'] = dataframe[colonne].str.split().str[0].str.lower()
 
-    table = pd.merge(base_prenom_genre, dataframe, on='prenom', how='inner')
+    table = pd.merge(base_prenom_genre, dataframe, on='prenom', how='right')
     table = table.drop(columns=['prenom'])
     
     return table
