@@ -113,8 +113,8 @@ def graphique_presse_vs_spect(dataframe):
 
     modalites_presentes = dataframe['genre1'].value_counts()
 
-    # On ne représente que les modalités qui sont présentes en un nombre suffisant de fois (nombre fixé à 20 films)
-    modalites_suffisantes = list(modalites_presentes[modalites_presentes >= 20].index) 
+    # On ne représente que les modalités qui sont présentes en un nombre suffisant de fois (nombre fixé à 30 films)
+    modalites_suffisantes = list(modalites_presentes[modalites_presentes >= 30].index) 
     modalites_suffisantes.append('Tous')
 
 
