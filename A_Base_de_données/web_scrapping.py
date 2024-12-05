@@ -340,13 +340,3 @@ def get_base_final(annee_debut, annee_fin):
             base_final = pd.concat([base_final, base_annee_x], ignore_index=True)
 
     return base_final
-
-
-
-base_final = get_base_final(2010,2024)
-
-
-# Write to CSV file
-base_final.to_csv('base_final_.csv', index=False)
-
-print("Etape de Webscraping terminé.")
