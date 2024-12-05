@@ -1,7 +1,6 @@
 
 
 # Importations des librairies
-from joblib import Parallel, delayed
 from unidecode import unidecode
 import pandas as pd
 import numpy as np
@@ -166,9 +165,15 @@ def get_genre_individuel(dataframe, colonne):
     base_prenom_genre = base_prenom()
     base_prenom_genre = base_prenom_genre.drop(columns=['04_fréquence','langage_ind'])
 
+    # Suppression des accents pour améliorer les matching de prénoms
+    base_prenom_genre['prenom'] = base_prenom_genre['prenom'].astype(str)
+    base_prenom_genre['prenom'] = base_prenom_genre['prenom'].apply(unidecode)
+    base_prenom_genre = base_prenom_genre.drop_duplicates(subset='prenom')
 
-    # transformation du prénom en minuscule afin de pouvoir merger sans problème de Majuscule
+    # transformation du prénom en minuscule afin de pouvoir merger sans problème de Majuscule + suppression des accents
     dataframe['prenom'] = dataframe[colonne].str.split().str[0].str.lower()
+    dataframe['prenom'] = dataframe['prenom'].astype(str)
+    dataframe['prenom'] = dataframe['prenom'].apply(unidecode)
 
     table = pd.merge(base_prenom_genre, dataframe, on='prenom', how='right')
     table = table.drop(columns=['prenom'])
