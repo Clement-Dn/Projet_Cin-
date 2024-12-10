@@ -54,3 +54,31 @@ def get_table_cluster(dataframe, data_presse):
 
 
     return df_transposed
+
+
+
+
+
+
+def optimal_clusters(dataframe, max_clusters):
+    """
+    Methode du coude pour déterminer le nombre de clusters optimal
+    """
+
+    inertie = []
+    k_range = range(1, max_clusters + 1)
+
+    for k in k_range:
+        kmeans = KMeans(n_clusters=k, random_state=0)
+        kmeans.fit(dataframe)
+        inertie.append(kmeans.inertia_)
+
+    # Plot de la méthode du coude
+    plt.figure(figsize=(8, 4))
+    plt.plot(k_range, inertie, 'bo-')
+    plt.xlabel('Nombre de clusters')
+    plt.ylabel('Inertia')
+    plt.title('Méthode du coude pour déterminer le nombre optimal de clusters')
+    plt.show()
+
+    return inertie
