@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import csv
 import time
+import nest_asyncio
 
 
 # Liste des 55 journaux
@@ -93,6 +94,8 @@ def get_liens(annee, genre=None):
     liens_pages = [f"{lien_maitre+"?page="}{i}" for i in range(1, dernier + 1)]
 
     # Fonction asynchrone pour récupérer les liens d'une page
+    nest_asyncio.apply()
+
     async def fetch_links(session, url):
         try:
             async with session.get(url) as response:
@@ -151,6 +154,8 @@ def get_liens(annee, genre=None):
     # Pour chaque page on ws les liens des films
 
 def get_carac_film(base_liens):
+    nest_asyncio.apply()
+
     async def fetch(session, url):
         async with session.get(url) as response:
             return await response.text()
@@ -340,3 +345,6 @@ def get_base_final(annee_debut, annee_fin):
             base_final = pd.concat([base_final, base_annee_x], ignore_index=True)
 
     return base_final
+
+base_final = get_base_final(2010,2024)
+
