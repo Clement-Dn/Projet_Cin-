@@ -353,7 +353,3 @@ def get_base_final(annee_debut, annee_fin):
             base_final = pd.concat([base_final, base_annee_x], ignore_index=True)
 
     return base_final
-
-base_final = get_base_final(2001,2023)
-
-base_final.to_csv('base_final_v2.csv', index=False)

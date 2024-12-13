@@ -9,8 +9,6 @@ import pandas as pd
 
 
 
-
-
 def get_table_cluster(dataframe, data_presse):
 
     # récupération des moyennes par genre du réalisateur

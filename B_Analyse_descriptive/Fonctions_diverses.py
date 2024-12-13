@@ -35,8 +35,8 @@ def comparaison_preferences(dataframe):
     ''' 
 
     '''
-    preferences_spect = classement_genres_preferes(dataframe, 'spectateur')
-    preferences_presse = classement_genres_preferes(dataframe, 'presse')
+    preferences_spect = classement_genres_preferes(dataframe, 'spectators_rating')
+    preferences_presse = classement_genres_preferes(dataframe, 'press_rating')
     
     # Affichage côte à côte
     html_content = f"""
@@ -60,7 +60,7 @@ def p_value_anova_h_vs_f(dataframe):
     '''
 
     dataframe = dataframe[dataframe['genre_ind'].isin(['f', 'm'])]
-    model = ols('spectateur ~ C(genre_ind)', data=dataframe).fit()
+    model = ols('spectators_rating ~ C(genre_ind)', data=dataframe).fit()
     anova_table = sm.stats.anova_lm(model, typ=2)
 
     return(f'P-value du test ANOVA: {anova_table.iloc[0]['PR(>F)']:.3f}')
@@ -74,7 +74,7 @@ def boxplot_duree(dataframe, variable):
 
     '''
     plt.figure(figsize=(12, 8))
-    sns.boxplot(x=variable, y='spectateur', data=dataframe)
+    sns.boxplot(x=variable, y='spectators_rating', data=dataframe)
     plt.title('Distribution des notes des spectateurs par catégorie de durée')
     plt.xlabel('Durée en minutes')
     plt.ylabel('Note des spectateurs')

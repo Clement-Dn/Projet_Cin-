@@ -30,7 +30,7 @@ def mise_en_forme_decimale(valeur):
 
 
 
-#############################################################  Création des variables : annee, duree (en minutes) et catégorisation des durées
+#############################################################  Création de variables : annee, duree (en minutes) et catégorisation des durées
 
 
 def get_annee(dataframe, colonne):
@@ -174,6 +174,25 @@ def get_genre_individuel(dataframe, colonne):
     table = table.drop(columns=['prenom'])
     
     return table
+
+
+#############################################################  Catégorisation des récompenses 
+
+
+def get_cat_recompenses(recompense):
+    '''
+    Catégoriser les récompenses
+    '''
+
+    if pd.isna(recompense):
+        return 'rien'
+    elif 'prix' in recompense:
+        return 'prix'
+    elif 'nominations' in recompense:
+        return 'nominations'
+    else:
+        return 'rien'
+
 
 
 ##########################################################################################  Traitement base CNC

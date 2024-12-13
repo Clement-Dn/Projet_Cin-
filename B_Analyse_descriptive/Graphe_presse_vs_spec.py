@@ -68,11 +68,11 @@ def plot_spec_vs_presse(dataframe, genre):
         titre = 'Répartition des notes de presse VS spectateurs pour tous les films'
 
     plt.figure(figsize=(6, 5))
-    sns.scatterplot(data=dataframe, x='spectateur', y='presse', alpha=0.7, linewidth=0.5, legend = False)
+    sns.scatterplot(data=dataframe, x='spectators_rating', y='press_rating', alpha=0.7, linewidth=0.5, legend = False)
 
     # Ajout de la regression
-    degre_optimal = get_degre_optimal(dataframe[['spectateur']], dataframe[['presse']])
-    sns.regplot(data=dataframe, x='spectateur', y='presse', scatter=False, color='green', order=degre_optimal)
+    degre_optimal = get_degre_optimal(dataframe[['spectators_rating']], dataframe[['press_rating']])
+    sns.regplot(data=dataframe, x='spectators_rating', y='press_rating', scatter=False, color='green', order=degre_optimal)
 
     plt.plot([0, 5], [0, 5], 'k--', label='x = y') 
     plt.xlim(0, 5)
@@ -84,8 +84,8 @@ def plot_spec_vs_presse(dataframe, genre):
     
     # Ajout du nombre de films pris en compte ainsi que les moyennes de notes respectives de la presse et des spectateurs
     nb_films = len(dataframe)
-    moy_spect = dataframe['spectateur'].mean()
-    moy_presse = dataframe['presse'].mean()
+    moy_spect = dataframe['spectators_rating'].mean()
+    moy_presse = dataframe['press_rating'].mean()
 
     if genre == 'Tous':
         genre = ''
@@ -96,7 +96,7 @@ def plot_spec_vs_presse(dataframe, genre):
 
 
     # Ajout du coefficient de corrélation linéaire
-    coefficient_corr = dataframe['spectateur'].corr(dataframe['presse'])
+    coefficient_corr = dataframe['spectators_rating'].corr(dataframe['press_rating'])
     plt.text(0.95, 0.45, f'Coefficient de corrélation linéaire: {coefficient_corr:.3f}', transform=plt.gcf().transFigure, horizontalalignment='left', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
 
 

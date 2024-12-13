@@ -44,7 +44,7 @@ def histogramme_genre_film(dataframe, genre1, genre2):
     if genre1 != ' ' or genre2 != ' ':
         plt.figure(figsize=(8, 6))
 
-        sns.histplot(data=dataframe, x='spectateur', hue='genre', bins=10, kde=True)
+        sns.histplot(data=dataframe, x='spectators_rating', hue='genre', bins=10, kde=True)
         plt.title(titre)
         plt.xlabel('Notes des spectateurs')
         plt.ylabel('Occurences')
@@ -55,10 +55,10 @@ def histogramme_genre_film(dataframe, genre1, genre2):
         if genre1 != 'Tous' and genre2 != ' ' and genre1 != genre2:
             
             nb_films_1 = len(dataframe.loc[dataframe['genre'] == genre1])
-            moyenne_1 = dataframe.loc[dataframe['genre'] == genre1]['spectateur'].mean()
+            moyenne_1 = dataframe.loc[dataframe['genre'] == genre1]['spectators_rating'].mean()
 
             nb_films_2 = len(dataframe.loc[dataframe['genre'] == genre2])
-            moyenne_2 = dataframe.loc[dataframe['genre'] == genre2]['spectateur'].mean()
+            moyenne_2 = dataframe.loc[dataframe['genre'] == genre2]['spectators_rating'].mean()
             
             if genre1 != ' ':
                 plt.text(0.95, 0.75, f'Nombre de films {genre1} : {nb_films_1}', transform=plt.gcf().transFigure, horizontalalignment='left', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
@@ -72,7 +72,7 @@ def histogramme_genre_film(dataframe, genre1, genre2):
 
         else:
             nb_films = len(dataframe)
-            moyenne = dataframe['spectateur'].mean()
+            moyenne = dataframe['spectators_rating'].mean()
             plt.text(0.95, 0.75, f'Nombre de films : {nb_films}', transform=plt.gcf().transFigure, horizontalalignment='left', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
 
             plt.figtext(0.95, 0.70, f'Note moyenne: {moyenne:.2f}', ha='left', va='top', bbox=dict(facecolor='white', alpha=0.5))
@@ -83,7 +83,7 @@ def histogramme_genre_film(dataframe, genre1, genre2):
         # test ANOVA (singificativité de différence dans les moyennes de chaque type de films)
         if genre2 != ' ' or genre1 == 'Tous':
             if genre1 != ' 'and genre1 != genre2:
-                model = ols('spectateur ~ C(genre)', data=dataframe).fit()
+                model = ols('spectators_rating ~ C(genre)', data=dataframe).fit()
                 anova_table = sm.stats.anova_lm(model, typ=2)
                 # Affchage de la p-value
                 plt.figtext(0.95, 0.40, f'P-value ANOVA: {anova_table.iloc[0]['PR(>F)']:.2f}', ha='left', va='top', bbox=dict(facecolor='white', alpha=0.5))
