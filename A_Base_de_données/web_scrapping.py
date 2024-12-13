@@ -10,6 +10,9 @@ import nest_asyncio
 import pandas as pd
 import numpy as np
 import csv
+import time
+import nest_asyncio
+
 
 # Liste des 55 journaux
 journaux = [
@@ -40,7 +43,7 @@ def get_liens(annee, genre=None):
 
     # Vérification de la validité de l'année
     if isinstance(annee, int):
-        if annee > 2029 or annee < 2010:
+        if annee > 2029 or annee < 2000:
             print(f"L'année '{annee}' n'est pas valide (doit être comprise entre 2010 et 2029)")
             return
     else:
@@ -50,9 +53,10 @@ def get_liens(annee, genre=None):
     # récupération de la décennie correspondant sur le site AlloCine
     decennie = '2020'
 
-    if annee < 2020:
+    if (annee >= 2010) & (annee < 2020):
         decennie = '2010'
-
+    elif annee < 2010:
+        decennie = '2000'
     annee = str(annee)
 
     # Equivalence numérique du genre recherché
@@ -91,16 +95,36 @@ def get_liens(annee, genre=None):
     liens_pages = [f"{lien_maitre+"?page="}{i}" for i in range(1, dernier + 1)]
 
     # Fonction asynchrone pour récupérer les liens d'une page
+    nest_asyncio.apply()
+
     async def fetch_links(session, url):
         try:
             async with session.get(url) as response:
                 if response.status == 200:
                     content = await response.text()
                     soup = BeautifulSoup(content, 'html.parser')
-                    links = [a['href'] for a in soup.find_all('a', class_='meta-title-link')]
+
+                    # Trouver tous les divs avec la classe 'card entity-card entity-card-list cf'
+                    entity_cards = soup.find_all('div', class_='card entity-card entity-card-list cf')
+
+                    # Liste pour stocker les liens trouvés
+                    links = []
+
+                    # Parcourir chaque div trouvé
+                    for card in entity_cards:
+                        # Vérifier s'il y a un div avec la classe 'rating-holder rating-holder-3'
+                        rating_holder = card.find('div', class_='rating-holder rating-holder-3')
+                        if rating_holder:
+                            # Chercher le lien avec la classe 'meta-title-link' dans le div parent
+                            meta_title_link = card.find('a', class_='meta-title-link')
+                            if meta_title_link:
+                                # Ajouter le lien trouvé à la liste
+                                links.append(meta_title_link['href'])
+
+
                     return links
                 else:
-                    print(f"Failed to retrieve {url}")
+                    print(f"Failed to retrieve the page. Status code: {response.status}")
                     return []
         except Exception as e:
             print(f"Error fetching {url}: {e}")
@@ -125,15 +149,14 @@ def get_liens(annee, genre=None):
         'links': results
     })
     new_data['links'] = new_data['links'].apply(lambda x: "https://www.allocine.fr" + x)
-    print(len(new_data))
 
     return new_data
 
     # Pour chaque page on ws les liens des films
 
-
-
 def get_carac_film(base_liens):
+    nest_asyncio.apply()
+
     async def fetch(session, url):
         async with session.get(url) as response:
             return await response.text()
@@ -145,10 +168,14 @@ def get_carac_film(base_liens):
             tasks = [fetch(session, url) for url in base_liens["links"]]
             responses = await asyncio.gather(*tasks)
             film_charac = []
-            j = 1
+            j = 0                 
+            interval = len(base_liens) // 20  # Afficher l'avancement tous les 1%
+
+
             for i, response in enumerate(responses):
+                # Calcul du pourcentage d'avancement
+                if j % interval == 0: print(f"Avancement: {j / len(base_liens) * 100:.2f}%")
                 j = j + 1
-                print(j)
                 soup = BeautifulSoup(response, 'html.parser')
 
                 identifiant = re.search(r'\d+', base_liens["links"][i]).group()
@@ -161,6 +188,13 @@ def get_carac_film(base_liens):
                     duration = duration_span.find_next_sibling(text=True).strip()
                 else:
                     duration = 'N/A'
+
+                titre_div = soup.find('div', class_='titlebar-title titlebar-title-xl')
+                titre = titre_div.text.strip() if titre_div else ''
+
+                date_span = soup.find('span', class_='date')
+                date = date_span.text.strip() if date_span else ''
+
 
                 # Extraire les genres (maximum 3 genres)
                 # Trouver tous les liens avec la classe 'dark-grey-link'
@@ -178,9 +212,13 @@ def get_carac_film(base_liens):
                 director = producer_a.text.strip() if producer_a else 'N/A'
 
                 # Extract press rating and number of reviews
-                press_rating_element = soup.find('div', class_='rating-item-content')
-                press_rating = press_rating_element.find('span', class_='stareval-note').text if press_rating_element else ''
-                press_reviews = press_rating_element.find('span', class_='stareval-review').text.split()[0] if press_rating_element else ''
+                press_rating_element_div = soup.find('div', class_='rating-item-content')
+                if press_rating_element_div:
+                    press_rating = press_rating_element_div.find('span', class_='stareval-note').text if press_rating_element_div.find('span', class_='stareval-note') else ''
+                    press_reviews = press_rating_element_div.find('span', class_='stareval-review').text.split()[0] if press_rating_element_div.find('span', class_='stareval-review') else ''
+                else:
+                    press_rating = ''
+                    press_reviews = ''
                 # Extract spectators rating and number of reviews
                 spectators_rating_element = soup.find_all('div', class_='rating-item-content')
                 spectators_rating = spectators_rating_element[1].find('span', class_='stareval-note').text if len(spectators_rating_element) > 1 and spectators_rating_element[1] else ''
@@ -222,6 +260,9 @@ def get_carac_film(base_liens):
 
                     format_projection_span = fiche_tech.find('span', string='Format de projection')
                     format_projection = format_projection_span.find_next_sibling('span').text.strip() if format_projection_span else ''
+                   
+                    recompenses_span = fiche_tech.find('span', string='Récompenses')
+                    recompenses = recompenses_span.find_next_sibling('span').text.strip() if recompenses_span else ''
 
                     num_visa_span = fiche_tech.find('span', string='N° de Visa')
                     num_visa = num_visa_span.find_next_sibling('span').text.strip() if num_visa_span else ''
@@ -248,28 +289,71 @@ def get_carac_film(base_liens):
 
                 film_charac.append([
                     identifiant, release, nationalite, date_sortie_dvd, date_sortie_bluray, date_sortie_vod,
-                    type_film, budget, langues, format_production, couleur, format_audio, format_projection,
-                    num_visa, duration, genre1, genre2, genre3, director, press_rating, press_reviews, spectators_rating, spectators_reviews
+                    type_film, budget, langues, format_production, couleur, format_audio, format_projection,recompenses,
+                    num_visa, duration,date,titre, genre1, genre2, genre3, director, press_rating, press_reviews, spectators_rating, spectators_reviews
                 ] + list(press_reviews_list.values()))
 
             return film_charac
 
-    return asyncio.run(main())
+    film_charac = asyncio.run(main())
 
-df = get_liens(annee = 2016)
-dg = get_carac_film(df)
+    # Définir les colonnes du DataFrame
+    columns = [
+        'identifiant', 'release', 'nationalite', 'date_sortie_dvd', 'date_sortie_bluray', 'date_sortie_vod',
+        'type_film', 'budget', 'langues', 'format_production', 'couleur', 'format_audio', 'format_projection',
+        'recompenses',
+        'num_visa', 'duration','date','titre' ,'genre1', 'genre2', 'genre3', 'director', 'press_rating', 'press_reviews',
+        'spectators_rating', 'spectators_reviews'
+    ] + journaux
 
-# Write to CSV file
-with open('film_charac_2016.csv', mode='w', newline='', encoding='utf-8') as file:
-    writer = csv.writer(file)
-    # Write the header
-    writer.writerow([
-        'Identifiant', 'Release', 'Nationalite', 'Date_sortie_dvd', 'Date_sortie_bluray', 'Date_sortie_vod',
-        'Type_film', 'Budget', 'Langues', 'Format_production', 'Couleur', 'Format_audio', 'Format_projection',
-        'Num_visa', 'Duration', 'Genre1', 'Genre2', 'Genre3', 'Directors', 'Producer', 'Press_rating', 'Press_reviews', 'Spectators_rating', 'Spectators_reviews'
-    ] + journaux)
-    # Write the data
-    writer.writerows(dg)
+    # Créer le DataFrame
+    df = pd.DataFrame(film_charac, columns=columns)
 
-print("CSV file 'film_charac.csv' has been created successfully.")
+    return df
 
+
+
+def get_base_final(annee_debut, annee_fin):
+    # Initialisation de la base finale comme un DataFrame vide
+    base_final = pd.DataFrame()
+
+    # Boucle sur chaque année de annee_debut à annee_fin (non inclus)
+    for i in range(annee_debut, annee_fin):
+        print(f"L'année en cours de WS est '{i}'.")
+
+        # Mesure du temps de début
+        start_time = time.time()
+
+        # Obtention des caractéristiques des films pour l'année en cours
+        base_annee_x = get_carac_film(get_liens(annee=i))
+        print(f"Nombre de films trouvés {len(base_annee_x)}.")
+
+        # Mesure du temps de fin
+        end_time = time.time()
+
+        # Calcul du temps pris
+        elapsed_time = end_time - start_time
+        print(f"Temps pris pour obtenir les caractéristiques des films pour l'année {i}: {elapsed_time:.2f} secondes")
+
+        # Alignement des colonnes avant la concaténation
+        if base_final.empty:
+            base_final = base_annee_x
+        else:
+            # Ajout des colonnes manquantes avec des valeurs NaN
+            for col in base_annee_x.columns:
+                if col not in base_final.columns:
+                    base_final[col] = pd.Series([float('nan')] * len(base_final))
+
+            # Ajout des colonnes manquantes dans base_annee_x avec des valeurs NaN
+            for col in base_final.columns:
+                if col not in base_annee_x.columns:
+                    base_annee_x[col] = pd.Series([float('nan')] * len(base_annee_x))
+
+            # Concaténation des résultats à la base finale
+            base_final = pd.concat([base_final, base_annee_x], ignore_index=True)
+
+    return base_final
+
+base_final = get_base_final(2001,2023)
+
+base_final.to_csv('base_final_v2.csv', index=False)
