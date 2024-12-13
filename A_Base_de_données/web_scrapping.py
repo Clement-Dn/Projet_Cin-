@@ -43,7 +43,7 @@ def get_liens(annee, genre=None):
 
     # Vérification de la validité de l'année
     if isinstance(annee, int):
-        if annee > 2029 or annee < 2010:
+        if annee > 2029 or annee < 2000:
             print(f"L'année '{annee}' n'est pas valide (doit être comprise entre 2010 et 2029)")
             return
     else:
@@ -53,9 +53,10 @@ def get_liens(annee, genre=None):
     # récupération de la décennie correspondant sur le site AlloCine
     decennie = '2020'
 
-    if annee < 2020:
+    if (annee >= 2010) & (annee < 2020):
         decennie = '2010'
-
+    elif annee < 2010:
+        decennie = '2000'
     annee = str(annee)
 
     # Equivalence numérique du genre recherché
@@ -188,6 +189,13 @@ def get_carac_film(base_liens):
                 else:
                     duration = 'N/A'
 
+                titre_div = soup.find('div', class_='titlebar-title titlebar-title-xl')
+                titre = titre_div.text.strip() if titre_div else ''
+
+                date_span = soup.find('span', class_='date')
+                date = date_span.text.strip() if date_span else ''
+
+
                 # Extraire les genres (maximum 3 genres)
                 # Trouver tous les liens avec la classe 'dark-grey-link'
                 meta_body = soup.find('div',class_='meta-body-item meta-body-info')
@@ -282,7 +290,7 @@ def get_carac_film(base_liens):
                 film_charac.append([
                     identifiant, release, nationalite, date_sortie_dvd, date_sortie_bluray, date_sortie_vod,
                     type_film, budget, langues, format_production, couleur, format_audio, format_projection,recompenses,
-                    num_visa, duration, genre1, genre2, genre3, director, press_rating, press_reviews, spectators_rating, spectators_reviews
+                    num_visa, duration,date,titre, genre1, genre2, genre3, director, press_rating, press_reviews, spectators_rating, spectators_reviews
                 ] + list(press_reviews_list.values()))
 
             return film_charac
@@ -294,7 +302,7 @@ def get_carac_film(base_liens):
         'identifiant', 'release', 'nationalite', 'date_sortie_dvd', 'date_sortie_bluray', 'date_sortie_vod',
         'type_film', 'budget', 'langues', 'format_production', 'couleur', 'format_audio', 'format_projection',
         'recompenses',
-        'num_visa', 'duration', 'genre1', 'genre2', 'genre3', 'director', 'press_rating', 'press_reviews',
+        'num_visa', 'duration','date','titre' ,'genre1', 'genre2', 'genre3', 'director', 'press_rating', 'press_reviews',
         'spectators_rating', 'spectators_reviews'
     ] + journaux
 
@@ -346,5 +354,6 @@ def get_base_final(annee_debut, annee_fin):
 
     return base_final
 
-base_final = get_base_final(2010,2024)
+base_final = get_base_final(2001,2023)
 
+base_final.to_csv('base_final_v2.csv', index=False)
