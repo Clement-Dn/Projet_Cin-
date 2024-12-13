@@ -1,6 +1,4 @@
 
-VENDREDI 13 DECEMBRE : ENREGISTREMENT DE LA BASE DEFINITIVE SUR LE CLOUD ET VOIR CE QU'IL RESTE A FINIR (ATTENTION il ne restera plus qu'une semaine....)
-
 
 # Projet_Cin-
 Git du projet pour le cours de Python pour la data science
