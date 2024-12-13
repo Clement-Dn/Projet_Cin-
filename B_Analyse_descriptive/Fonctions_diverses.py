@@ -23,8 +23,8 @@ def classement_genres_preferes(dataframe, individu):
         Note_Moyenne=(individu, 'mean'),
         Nombre_de_Films=(individu, 'size'))
 
-    # On ne considère que les genres de films présents au moins 30 fois
-    notes_moyennes = notes_moyennes[notes_moyennes['Nombre_de_Films'] >= 30]
+    # On ne considère que les genres de films présents au moins 50 fois
+    notes_moyennes = notes_moyennes[notes_moyennes['Nombre_de_Films'] >= 50]
 
     return notes_moyennes.sort_values(by='Note_Moyenne', ascending=False)
 

@@ -102,8 +102,8 @@ def graphique_genre_film(dataframe):
 
     modalites_presentes = dataframe['genre1'].value_counts()
 
-    # On ne représente que les modalités qui sont présentes en un nombre suffisant de fois (nombre fixé à 30)
-    modalites_suffisantes = list(modalites_presentes[modalites_presentes >= 30].index) 
+    # On ne représente que les modalités qui sont présentes en un nombre suffisant de fois (nombre fixé à 50)
+    modalites_suffisantes = list(modalites_presentes[modalites_presentes >= 50].index) 
     modalites_suffisantes.append('Tous')
     modalites_suffisantes.append(' ')
 

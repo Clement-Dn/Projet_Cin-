@@ -2,6 +2,10 @@
 
 
 import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler 
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
 
 
 
@@ -75,8 +79,58 @@ def optimal_clusters(dataframe, max_clusters):
     plt.figure(figsize=(8, 4))
     plt.plot(k_range, inertie, 'bo-')
     plt.xlabel('Nombre de clusters')
-    plt.ylabel('Inertia')
-    plt.title('Méthode du coude pour déterminer le nombre optimal de clusters')
+    plt.ylabel('Inertie')
+    plt.title('Intertie en fonction du nombre de clusters (Méthode du coude pour déterminer le nombre optimal de clusters)')
     plt.show()
 
     return inertie
+
+
+
+def normalisation(dataframe):
+    """
+
+    """
+    scaler = StandardScaler()  
+    return scaler.fit_transform(dataframe)
+
+
+
+def determine_optimal_clusters(dataframe, max_clusters):
+    """
+    Détermine le nombre optimal de clusters en utilisant la méthode du coude.
+
+    """
+    # Normalisation
+    dataframe = normalisation(dataframe)
+
+    # Vecteur contenant les inerties
+    inertie = optimal_clusters(dataframe, max_clusters)
+
+    # Calcul des dérivées
+    derivees = np.diff(inertie)
+
+    # Recherche du coude
+    second_differences = np.diff(derivees)
+    nb_optimal = np.argmax(second_differences) + 2  
+
+    print(f"Le nombre optimal de clusters est : {nb_optimal}")
+    
+    return nb_optimal
+
+
+
+
+def clustering_K_means(dataframe, nb_clusters):
+    """ 
+
+    """
+
+    # Normalisation
+    dataframe_normalise = normalisation(dataframe)
+
+    # Clustering
+    kmeans = KMeans(n_clusters=nb_clusters, random_state=0)
+    dataframe['Cluster'] = kmeans.fit_predict(dataframe_normalise)
+
+    return dataframe.groupby('Cluster').groups
