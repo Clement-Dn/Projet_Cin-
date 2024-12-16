@@ -47,7 +47,7 @@ def histogramme_genre_film(dataframe, genre1, genre2):
         sns.histplot(data=dataframe, x='spectators_rating', hue='genre', bins=10, kde=True)
         plt.title(titre)
         plt.xlabel('Notes des spectateurs')
-        plt.ylabel('Occurences')
+        plt.ylabel('Nombre de films')
         plt.xlim(0, 5)
 
 

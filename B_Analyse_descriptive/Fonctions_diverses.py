@@ -13,15 +13,16 @@ import statsmodels.api as sm
 
 ###########################################################
 
-def classement_genres_preferes(dataframe, individu):
+def classement_genres_preferes(dataframe, individus):
     ''' 
+    Retourne le classsement des genres de films préférés par les INDIVIDUS (avec le nombre de films pris en compte)
 
     '''
 
     notes_moyennes = dataframe.rename(columns={'genre1': 'genre'})
     notes_moyennes = notes_moyennes.groupby('genre').agg(
-        Note_Moyenne=(individu, 'mean'),
-        Nombre_de_Films=(individu, 'size'))
+        Note_Moyenne=(individus, 'mean'),
+        Nombre_de_Films=(individus, 'size'))
 
     # On ne considère que les genres de films présents au moins 50 fois
     notes_moyennes = notes_moyennes[notes_moyennes['Nombre_de_Films'] >= 50]
@@ -33,7 +34,7 @@ def classement_genres_preferes(dataframe, individu):
 
 def comparaison_preferences(dataframe):
     ''' 
-
+    Met côte à côte le classement des genres préférés pour les spectateurs et pour la presse
     '''
     preferences_spect = classement_genres_preferes(dataframe, 'spectators_rating')
     preferences_presse = classement_genres_preferes(dataframe, 'press_rating')
@@ -56,7 +57,7 @@ def comparaison_preferences(dataframe):
 
 def p_value_anova_h_vs_f(dataframe):
     '''
-        retourne la p-value du test d'ANOVA pour les notations par rapport au genre des réalisateurs
+        Retourne la p-value du test d'ANOVA pour les notations par rapport au genre des réalisateurs
     '''
 
     dataframe = dataframe[dataframe['genre_ind'].isin(['f', 'm'])]
@@ -68,15 +69,35 @@ def p_value_anova_h_vs_f(dataframe):
 
 
 
+def get_moyenne_par_modalite(dataframe, variable):
+
+    """
+    Retourne la moyenne des notes des spectateurs par modalité de la VARIABLE en entrée
+    """
+    moyenne = dataframe.groupby(variable)['spectators_rating'].mean()
+
+    return moyenne.sort_values(ascending=False)
+
+
 
 def boxplot_duree(dataframe, variable):
     '''
+    Crée un boxplot de la distribution des notes des spectateurs par catégorie de durée.
 
     '''
+    # On ne prend pas en compte les modalités présentes qu'une seule fois
+    value_counts = dataframe[variable].value_counts()
+    modalites_a_garder = value_counts[value_counts > 1].index
+    dataframe_filtre = dataframe[dataframe[variable].isin(modalites_a_garder)]
+
+
+    # boxplot
     plt.figure(figsize=(12, 8))
-    sns.boxplot(x=variable, y='spectators_rating', data=dataframe)
+    sns.boxplot(x=variable, y='spectators_rating', data=dataframe_filtre)
     plt.title('Distribution des notes des spectateurs par catégorie de durée')
     plt.xlabel('Durée en minutes')
     plt.ylabel('Note des spectateurs')
-    plt.xticks(rotation=45) 
+    plt.xticks(rotation=45)
     plt.show()
+
+    return
