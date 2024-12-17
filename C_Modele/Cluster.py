@@ -45,8 +45,8 @@ def get_table_cluster(dataframe, data_presse):
     table_type = table_type.set_index('genre1')
 
 
-    # colonnes communes A GERER QUAND IL Y AURA LA BASE
-    df_cleaned_columns = table_type.loc[:, table_type.isnull().sum() <= 12]  
+    # colonnes communes - afin de gérer les presse qui n'évaluent pas les films de tous les genres
+    df_cleaned_columns = table_type.loc[:, table_type.isnull().sum() <= 15]  
     df_cleaned_rows = df_cleaned_columns.loc[df_cleaned_columns.isnull().sum(axis=1) <= 0]
 
     common_columns = df_cleaned_rows.columns.intersection(table_genre.columns)
@@ -114,7 +114,7 @@ def determine_optimal_clusters(dataframe, max_clusters):
     second_differences = np.diff(derivees)
     nb_optimal = np.argmax(second_differences) + 2  
 
-    print(f"Le nombre optimal de clusters est : {nb_optimal}")
+    print(f"Graphiquement le nombre optimal de clusters est : {nb_optimal}")
     
     return nb_optimal
 
@@ -134,3 +134,48 @@ def clustering_K_means(dataframe, nb_clusters):
     dataframe['Cluster'] = kmeans.fit_predict(dataframe_normalise)
 
     return dataframe.groupby('Cluster').groups
+
+
+
+
+def recuperer_clusters(dataframe, numero):
+    """ 
+    
+    """
+
+    cluster_liste = dataframe[numero].tolist()
+    liste_formatee = ", ".join([f"'{element}'" for element in cluster_liste]) 
+
+    return liste_formatee
+
+
+
+
+
+def graphe_cluster(dataframe):
+    """ 
+
+    """
+
+    # Récupération des clusters
+    clusters = clustering_K_means(dataframe,2)
+
+    # Récupération des moyennes pour chaque cluster
+    moyennes = dataframe.groupby('Cluster').mean().T
+    
+    plt.figure(figsize=(10, 6))
+
+    bar_width = 0.5
+    plt.bar(r1, moyennes[0], color='green', width=bar_width, label='Cluster 1')
+    plt.bar(r2, moyennes[1], color='#ADD8E6', width=bar_width, label='Cluster 2')
+    plt.xlabel('Variable étudiée', fontweight='bold')
+    plt.xticks([r + bar_width/2 for r in range(len(moyennes.index))], moyennes.index)
+    plt.ylabel('Notes')
+    plt.title('Comparaison des notes moyennes par Cluster')
+    plt.xticks(rotation=45)
+    plt.legend()
+
+
+    plt.text(0.95, 0.60, f'Cluster 1 : {recuperer_clusters(clusters, 0)}', transform=plt.gcf().transFigure, horizontalalignment='left', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
+    plt.text(0.95, 0.40, f'Cluster 2 : {recuperer_clusters(clusters, 1)}', transform=plt.gcf().transFigure, horizontalalignment='left', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
+
