@@ -71,11 +71,13 @@ def p_value_anova_h_vs_f(dataframe):
 def get_moyenne_par_modalite(dataframe, variable):
 
     """
-    Retourne la moyenne des notes des spectateurs par modalité de la VARIABLE en entrée
+    Retourne la moyenne des notes des spectateurs et de la presse par modalité de la VARIABLE en entrée
     """
-    moyenne = dataframe.groupby(variable)['spectators_rating'].mean()
-
-    return moyenne.sort_values(ascending=False)
+    moyenne = dataframe.groupby(variable).agg(
+    presse=('press_rating', "mean"),
+    spectateur=('spectators_rating', "mean"))
+    
+    return moyenne
 
 
 
