@@ -81,25 +81,43 @@ def get_moyenne_par_modalite(dataframe, variable):
 
 
 
+
+#################################################### Traitement et boxplot pour la durée de films
+
+
+def categorisation_duree(dataframe, variable):
+    ''' 
+
+    '''
+        
+    bins = range(0, int(dataframe[variable].max()) + 10, 10)
+    labels = [f'{i}-{i+9}' for i in bins[:-1]]
+    dataframe['duree_cat'] = pd.cut(dataframe[variable], bins=bins, labels=labels, right=False)
+
+    return dataframe
+
+
+
+
+
 def boxplot_duree(dataframe, variable):
     '''
     Crée un boxplot de la distribution des notes des spectateurs par catégorie de durée.
 
     '''
-    # On ne prend pas en compte les modalités présentes qu'une seule fois
-    value_counts = dataframe[variable].value_counts()
-    modalites_a_garder = value_counts[value_counts > 1].index
-    dataframe_filtre = dataframe[dataframe[variable].isin(modalites_a_garder)]
+    # suppression des films ayant des valeurs de durées aberrantes (ce qui représente 27 films sur les 10837)
+    dataframe = dataframe[dataframe['duration_min']<360]
+    dataframe = categorisation_duree(dataframe, 'duration_min')
 
 
     # boxplot
+    # modalites_inverses = dataframe_filtre[variable].unique()[::-1]
     plt.figure(figsize=(12, 8))
-    sns.boxplot(x=variable, y='spectators_rating', data=dataframe_filtre)
+    sns.boxplot(x=variable, y='spectators_rating', data=dataframe)
     plt.title('Distribution des notes des spectateurs par catégorie de durée')
     plt.xlabel('Durée en minutes')
     plt.ylabel('Note des spectateurs')
     plt.xticks(rotation=45)
-    plt.show()
 
     return
 
