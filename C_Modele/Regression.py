@@ -13,6 +13,7 @@ from scipy.stats import t
 from scipy.stats import shapiro
 
 
+
 def regression(dataframe):
     """
     Régression linéaire avec normalisation de la variable cible et des variables continues

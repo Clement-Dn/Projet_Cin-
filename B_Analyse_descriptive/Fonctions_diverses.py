@@ -10,7 +10,7 @@ import statsmodels.api as sm
 
 
 
-###########################################################
+###########################################################         Notes presse et spectateurs par genre de film
 
 def classement_genres_preferes(dataframe, individus):
     ''' 
@@ -120,6 +120,10 @@ def boxplot_duree(dataframe, variable):
     plt.xticks(rotation=45)
 
     return
+
+
+
+
 
 def diagramme_baton_genre_proportion(dataframe, variable) : 
     dataframe= dataframe[dataframe['genre_ind'].isin(['f', 'm', "f_coréalisé", "m_coréalisé" ])]

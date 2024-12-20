@@ -1,5 +1,5 @@
 
-
+# Importation des librairies
 import numpy as np
 import seaborn as sns 
 from sklearn.model_selection import cross_val_score

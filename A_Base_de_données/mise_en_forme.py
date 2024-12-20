@@ -145,6 +145,7 @@ def base_prenom():
     return table
     
 
+
 def get_genre_individuel(dataframe, colonne):
     """  
     
@@ -170,7 +171,7 @@ def get_genre_individuel(dataframe, colonne):
 
 def get_cat_recompenses(recompense):
     '''
-    Catégoriser les récompenses
+    Catégorisation des récompenses
     '''
 
     if pd.isna(recompense):
