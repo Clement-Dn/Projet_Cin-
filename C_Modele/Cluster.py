@@ -168,7 +168,7 @@ def graphe_cluster(dataframe):
     bar_width = 0.5
     plt.bar(r1, moyennes[0], color='green', width=bar_width, label='Cluster 1')
     plt.bar(r2, moyennes[1], color='#ADD8E6', width=bar_width, label='Cluster 2')
-    plt.xlabel('Variable étudiée', fontweight='bold')
+    plt.xlabel('Variables étudiées', fontweight='bold')
     plt.xticks([r + bar_width/2 for r in range(len(moyennes.index))], moyennes.index)
     plt.ylabel('Notes')
     plt.title('Comparaison des notes moyennes par Cluster')
