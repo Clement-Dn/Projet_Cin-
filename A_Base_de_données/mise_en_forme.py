@@ -77,18 +77,6 @@ def duree_en_minutes(duree):
 
 
 
-def categorisation_duree(dataframe, variable):
-    ''' 
-
-    '''
-        
-    bins = range(0, int(dataframe[variable].max()) + 10, 10)
-    labels = [f'{i}-{i+9}' for i in bins[:-1]]
-    dataframe['duree_cat'] = pd.cut(dataframe[variable], bins=bins, labels=labels, right=False)
-
-    return dataframe
-
-
 
 ############################################################# Traduction en valeur numérique des notes (Très bien, Pas mal, etc)
 
@@ -291,9 +279,3 @@ def get_laureat_nomination(colonne):
     nominations = int(nominations.group(1)) if nominations else 0
 
     return prix, nominations
-    # Pour vérifier si la fonction fonctionne.
-        # Lire le fichier CSV dans un DataFrame
-        #data = pd.read_csv('/home/onyxia/work/Projet_Cin-/A_Base_de_données/base_final_recompenses.csv')
-        # Appliquer la fonction
-        #data[['prix', 'nominations']] = data['recompenses'].apply(lambda x: pd.Series(get_laureat_nomination(x)))
-        #print(data.head())

@@ -72,7 +72,7 @@ def regression(dataframe):
 
 
 
-    ########### Coefficients et intervalles de confiance (95%)
+    ########### Coefficients et intervalles de confiance (à 95%)
     coefficients = pd.DataFrame({'Variable': X.columns, 'Coefficient': lr_model.coef_})
     coefficients = coefficients.sort_values(by='Coefficient', ascending=False)
 
@@ -96,7 +96,7 @@ def regression(dataframe):
         for coef, std_err in zip(lr_model.coef_, std_errors)
     ]
 
-    # Affichage 
+    # Affichage des coefficients et intervalles de confiance
     coefficients_df = pd.DataFrame({
         'Variable': X.columns,
         'Coefficient': lr_model.coef_,

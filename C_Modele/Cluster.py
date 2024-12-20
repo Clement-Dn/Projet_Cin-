@@ -1,6 +1,6 @@
 
 
-
+# Importation des librairies
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler 
@@ -14,6 +14,9 @@ import matplotlib.pyplot as plt
 
 
 def get_table_cluster(dataframe, data_presse):
+    """
+    Retourne une table avec les moyennes pour chaque presse les notes attibuées en fonction du genre du film
+    """
 
     # récupération des moyennes par genre du réalisateur
     table_genre = pd.merge(dataframe[['identifiant', 'genre_ind']], data_presse, on = 'identifiant', how='left')
@@ -45,7 +48,7 @@ def get_table_cluster(dataframe, data_presse):
     table_type = table_type.set_index('genre1')
 
 
-    # colonnes communes - afin de gérer les presse qui n'évaluent pas les films de tous les genres
+    # colonnes communes  afin de gérer les presse qui n'évaluent pas les films de tous les genres
     df_cleaned_columns = table_type.loc[:, table_type.isnull().sum() <= 15]  
     df_cleaned_rows = df_cleaned_columns.loc[df_cleaned_columns.isnull().sum(axis=1) <= 0]
 
@@ -64,7 +67,7 @@ def get_table_cluster(dataframe, data_presse):
 
 def optimal_clusters(dataframe, max_clusters):
     """
-    Methode du coude pour déterminer le nombre de clusters optimal
+    Calcul de l'inertie en fonction du nombre de clusters et affiche le graphique associé 
     """
 
     inertie = []
@@ -86,13 +89,6 @@ def optimal_clusters(dataframe, max_clusters):
     return inertie
 
 
-
-def normalisation(dataframe):
-    """
-
-    """
-    scaler = StandardScaler()  
-    return scaler.fit_transform(dataframe)
 
 
 
@@ -121,9 +117,20 @@ def determine_optimal_clusters(dataframe, max_clusters):
 
 
 
+def normalisation(dataframe):
+    """
+    Normalisation de toutes les données présentes dans le dataframe
+
+    """
+    scaler = StandardScaler()  
+    return scaler.fit_transform(dataframe)
+
+
+
+
 def clustering_K_means(dataframe, nb_clusters):
     """ 
-
+    Clustering par la méthode KMeans en utilisant NB_CLUSTERS nombre de clusters et en normalisant les données en entrée
     """
 
     # Normalisation
@@ -175,7 +182,7 @@ def graphe_cluster(dataframe):
     plt.xticks(rotation=45)
     plt.legend()
 
-
+    # Appel à une autre fonctionn pour récupérer la liste des presses au sein de chaque cluster
     plt.text(0.95, 0.60, f'Cluster 1 : {recuperer_clusters(clusters, 0)}', transform=plt.gcf().transFigure, horizontalalignment='left', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
     plt.text(0.95, 0.40, f'Cluster 2 : {recuperer_clusters(clusters, 1)}', transform=plt.gcf().transFigure, horizontalalignment='left', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
 
