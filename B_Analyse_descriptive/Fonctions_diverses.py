@@ -103,5 +103,28 @@ def boxplot_duree(dataframe, variable):
 
     return
 
+def diagramme_baton_genre_proportion(dataframe, variable) : 
+    dataframe= dataframe[dataframe['genre_ind'].isin(['f', 'm', "f_coréalisé", "m_coréalisé" ])]
 
+    # Calcul des comptages pour chaque combinaison de variable et genre_ind
+    count_data = dataframe.groupby([variable, 'genre_ind']).size().reset_index(name='count')
+    # Calcul du total par genre_ind (homme ou femme)
+    total_genre = dataframe.groupby('genre_ind').size().reset_index(name='total')
+    # Fusionner les données pour ajouter le total à chaque ligne
+    count_data = pd.merge(count_data, total_genre, on='genre_ind')
+    # Calcul des pourcentages
+    count_data['percentage'] = (count_data['count'] / count_data['total']) 
+    
+ 
+
+     # Créer le barplot avec seaborn
+    sns.barplot(data=count_data, x=variable, y='percentage', hue='genre_ind')
+
+    # Ajouter des titres et des labels
+    plt.title('Proportions des films selon le sexe du réalisateur')
+    plt.xlabel(variable)
+    plt.ylabel('Proportion de films')
+    plt.legend(title='Genre')
+    # Afficher le plot
+    plt.show()
 
