@@ -1,31 +1,37 @@
 
+# packages utilisés dans le cadre du projet
 
-
-pandas
-numpy
-requests
-io
-re
-csv
-time
-
-joblib
-ipywidgets
-IPython.display
-lxml
-lxml.html
 aiohttp
 asyncio
-nest_asyncio
-unidecode
 bs4
+csv
+
+io
+ipywidgets
+IPython.display
+joblib
+lxml
+lxml.html
+
 matplotlib.pyplot
-statsmodels.api
-statsmodels.formula.api
+nest_asyncio
+numpy
+pandas
+re
+requests
+
+
+scipy.stats
 seaborn
 
-sklearn.preprocessing
 sklearn.cluster
+sklearn.linear_model
+sklearn.metrics
+sklearn.model_selection
+sklearn.preprocessing
 
+statsmodels.api
+statsmodels.formula.api
 
-
+time
+unidecode

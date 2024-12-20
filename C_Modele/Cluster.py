@@ -1,5 +1,6 @@
 
 
+
 # Importation des librairies
 import pandas as pd
 import numpy as np
@@ -146,7 +147,7 @@ def clustering_K_means(dataframe, nb_clusters):
 
 def recuperer_clusters(dataframe, numero):
     """ 
-    Recuperation de liste des 
+    Recuperation de liste des presses dans chaque Cluster
     """
 
     cluster_liste = dataframe[numero].tolist()
@@ -159,6 +160,7 @@ def recuperer_clusters(dataframe, numero):
 
 def graphe_cluster(dataframe):
     """ 
+    Visualisation au sein de chaque groupe (cluster) des notes moyennes pour chaque variable étudiée.
 
     """
 

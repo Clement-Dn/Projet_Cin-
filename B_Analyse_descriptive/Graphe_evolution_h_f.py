@@ -1,5 +1,5 @@
 
-
+# Importations des librairies
 import ipywidgets as widgets
 import matplotlib.pyplot as plt
 from IPython.display import display, clear_output
@@ -32,9 +32,9 @@ def evolution_f_h(dataframe, genre):
     # Sélection du genre de film a prendre en compte
     if genre != 'Tous':
         dataframe = dataframe.loc[dataframe['genre1'] == genre]
-        titre = f'Nb de films h vs f pour les films {genre}'
+        titre = f'Nb de films par genre du/des réalisateur/s pour les films {genre}'
     else:
-        titre = 'Nb de films h vs f' 
+        titre = 'Nb de films par genre du/des réalisateur/s' 
 
 
     groupby = dataframe.groupby(['annee', 'genre_ind']).size().reset_index(name='count')
@@ -48,22 +48,30 @@ def evolution_f_h(dataframe, genre):
     plt.figure(figsize=(10, 6))
     plt.plot(transposee.index, transposee['f'], label='F', marker='o')
     plt.plot(transposee.index, transposee['m'], label='M', marker='o')
+    plt.plot(transposee.index, transposee['m_coréalisé'], label='M_coréalisé', marker='o')
+    plt.plot(transposee.index, transposee['f_coréalisé'], label='F_coréalisé', marker='o')
     plt.title(titre)
     plt.xlabel('Année')
     plt.ylabel('Nombre de films')
-    plt.legend(title='Genre du réalisateur')
+    plt.legend(title='Genre du/des réalisateur/s')
 
 
 
 def graphique_h_f(dataframe):
     """ 
     
-    Graphique intéractif du nombre de films par réalisateur f et h en fonction du type de film
+    Graphique interactif du nombre de films par réalisateur f, m, ou bien avec plusieurs réalisateurs en fonction du type de film
     
     """
+    # Annees considérées
+    annee_conservees = list(range(2010, 2023))
+    annees_string = [str(annee) for annee in annee_conservees]
+    dataframe = dataframe[dataframe['annee'].isin(annees_string)]
 
+
+    # On ne conserve que les genres de films qui sont assez nombreux (fixé à > 20)
     modalites_presentes = dataframe['genre1'].value_counts()
-    modalites_suffisantes = list(modalites_presentes[modalites_presentes >= 5].index)
+    modalites_suffisantes = list(modalites_presentes[modalites_presentes >= 20].index)
     modalites_suffisantes.append('Tous')
 
 
