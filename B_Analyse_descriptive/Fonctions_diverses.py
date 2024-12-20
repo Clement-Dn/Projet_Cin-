@@ -10,7 +10,6 @@ import statsmodels.api as sm
 
 
 
-
 ###########################################################
 
 def classement_genres_preferes(dataframe, individus):
@@ -101,3 +100,6 @@ def boxplot_duree(dataframe, variable):
     plt.show()
 
     return
+
+
+

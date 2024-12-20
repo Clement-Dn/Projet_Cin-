@@ -172,6 +172,7 @@ def get_genre_individuel(dataframe, colonne):
 
     table = pd.merge(base_prenom_genre, dataframe, on='prenom', how='right')
     table = table.drop(columns=['prenom'])
+    table['genre_ind'] = table['genre_ind'].replace('m,f', 'f,m')
     
     return table
 
@@ -185,7 +186,7 @@ def get_cat_recompenses(recompense):
     '''
 
     if pd.isna(recompense):
-        return 'rien'
+        return 'aucune récompense'
     elif 'prix' in recompense:
         return 'prix'
     elif 'nominations' in recompense:
