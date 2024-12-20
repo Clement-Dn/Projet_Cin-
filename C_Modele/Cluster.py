@@ -54,8 +54,7 @@ def get_table_cluster(dataframe, data_presse):
 
     common_columns = df_cleaned_rows.columns.intersection(table_genre.columns)
     result_combined = pd.concat([table_genre[common_columns], df_cleaned_rows[common_columns]])
-    df_cleaned = result_combined.drop(index=['m,f', 'f,m'])
-    df_transposed = df_cleaned.T
+    df_transposed = result_combined.T
 
 
     return df_transposed
@@ -67,7 +66,7 @@ def get_table_cluster(dataframe, data_presse):
 
 def optimal_clusters(dataframe, max_clusters):
     """
-    Calcul de l'inertie en fonction du nombre de clusters et affiche le graphique associé 
+    Calcul de l'inertie en fonction du nombre de clusters et affiche du graphique associé 
     """
 
     inertie = []
@@ -147,14 +146,13 @@ def clustering_K_means(dataframe, nb_clusters):
 
 def recuperer_clusters(dataframe, numero):
     """ 
-    
+    Recuperation de liste des 
     """
 
     cluster_liste = dataframe[numero].tolist()
     liste_formatee = ", ".join([f"'{element}'" for element in cluster_liste]) 
 
     return liste_formatee
-
 
 
 
@@ -171,8 +169,12 @@ def graphe_cluster(dataframe):
     moyennes = dataframe.groupby('Cluster').mean().T
     
     plt.figure(figsize=(10, 6))
-
     bar_width = 0.5
+    
+    r1 = range(len(moyennes.index))
+    r2 = [x + bar_width for x in r1]
+
+    
     plt.bar(r1, moyennes[0], color='green', width=bar_width, label='Cluster 1')
     plt.bar(r2, moyennes[1], color='#ADD8E6', width=bar_width, label='Cluster 2')
     plt.xlabel('Variables étudiées', fontweight='bold')
