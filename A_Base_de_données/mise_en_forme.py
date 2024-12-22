@@ -255,8 +255,11 @@ def genres_multiple(liste):
 
 
 def ajout_genre_multiple(dataframe, colonne):
+    """ 
+    Application sur chaque ligne du dataframe pour déterminer si plusieurs réalisateurs (et si au moins une femme présente)
+    """
 
-    # # transformation de chaque élément de la colonne en liste pour faciliter la recherche de(s) genre(s)
+    # transformation de chaque élément de la colonne en liste pour faciliter la recherche de(s) genre(s)
     dataframe[colonne] = dataframe[colonne].str.split('/')
 
     # Parallélisation des CPU car sinon cela prend plusieurs minutes de parcourir les milliers de lignes

@@ -1,4 +1,5 @@
 
+
 # Importation des librairies
 import ipywidgets as widgets
 from IPython.display import display, clear_output
@@ -95,7 +96,7 @@ def histogramme_genre_film(dataframe, genre1, genre2):
 
 def histogramme_categorie_de_film(dataframe, variable, categorie1, categorie2):
     """
-
+    Génération de deux histogrammes (notes des spectateurs et presse) en fonction du devis  
     """
     fig, axes = plt.subplots(1, 2, figsize=(12, 6))
 

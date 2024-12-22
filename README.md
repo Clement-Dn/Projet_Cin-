@@ -30,10 +30,14 @@ Le projet est composé de 3 parties :
 - Peut-on regrouper certaines presse entre elles ?
 
 
+Les dossiers **A_Base_de_données**, **B_Analyse_descriptive** et **C_Modele** comprennent respectivement les fonctions utilisées pour chacune des parties du projet.
+
+
+## Recommandation d'execution
+Le fichier **requirements.txt** contient la liste des bibliothèques nécessaires pour exécuter le projet.
+
 
 ## Lien vers le notebook final
 https://github.com/Clement-Dn/Projet_Cin-/blob/main/Rapport_Projet_Cinema.ipynb
 
 
-## Recommandation d'execution
-Le fichier **requirements.txt** contient la liste des bibliothèques nécessaires pour exécuter le projet.

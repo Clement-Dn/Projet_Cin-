@@ -25,6 +25,7 @@ def classement_genres_preferes(dataframe, individus):
 
     # On ne considère que les genres de films présents au moins 50 fois
     notes_moyennes = notes_moyennes[notes_moyennes['Nombre_de_Films'] >= 50]
+    notes_moyennes['Note_Moyenne'] = notes_moyennes['Note_Moyenne'].round(2)
 
     return notes_moyennes.sort_values(by='Note_Moyenne', ascending=False)
 
@@ -76,6 +77,9 @@ def get_moyenne_par_modalite(dataframe, variable):
     moyenne = dataframe.groupby(variable).agg(
     presse=('press_rating', "mean"),
     spectateur=('spectators_rating', "mean"))
+
+    moyenne['presse'] = moyenne['presse'].round(2)
+    moyenne['spectateur'] = moyenne['spectateur'].round(2)
     
     return moyenne
 
@@ -87,7 +91,7 @@ def get_moyenne_par_modalite(dataframe, variable):
 
 def categorisation_duree(dataframe, variable):
     ''' 
-
+    Création d'une nouvelle variable catégorielle avec des intervalles de 9 mintues
     '''
         
     bins = range(0, int(dataframe[variable].max()) + 10, 10)
@@ -111,7 +115,6 @@ def boxplot_duree(dataframe, variable):
 
 
     # boxplot
-    # modalites_inverses = dataframe_filtre[variable].unique()[::-1]
     plt.figure(figsize=(12, 8))
     sns.boxplot(x=variable, y='spectators_rating', data=dataframe)
     plt.title('Distribution des notes des spectateurs par catégorie de durée')
@@ -122,31 +125,37 @@ def boxplot_duree(dataframe, variable):
     return
 
 
+####################################################      
+
 
 
 
 def diagramme_baton_genre_proportion(dataframe, variable) : 
+    '''
+
+    '''
     dataframe= dataframe[dataframe['genre_ind'].isin(['f', 'm', "f_coréalisé", "m_coréalisé" ])]
 
     # Calcul des comptages pour chaque combinaison de variable et genre_ind
     count_data = dataframe.groupby([variable, 'genre_ind']).size().reset_index(name='count')
+
     # Calcul du total par genre_ind (homme ou femme)
     total_genre = dataframe.groupby('genre_ind').size().reset_index(name='total')
+
     # Fusionner les données pour ajouter le total à chaque ligne
     count_data = pd.merge(count_data, total_genre, on='genre_ind')
+
     # Calcul des pourcentages
     count_data['percentage'] = (count_data['count'] / count_data['total']) 
     
  
 
-     # Créer le barplot avec seaborn
+    # Barplot 
     sns.barplot(data=count_data, x=variable, y='percentage', hue='genre_ind')
 
-    # Ajouter des titres et des labels
     plt.title('Proportions des films selon le sexe du réalisateur')
     plt.xlabel(variable)
     plt.ylabel('Proportion de films')
     plt.legend(title='Genre')
-    # Afficher le plot
     plt.show()
 

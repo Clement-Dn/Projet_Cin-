@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 
 
 
-
 def get_table_cluster(dataframe, data_presse):
     """
     Retourne une table avec les moyennes pour chaque presse les notes attibuées en fonction du genre du film
