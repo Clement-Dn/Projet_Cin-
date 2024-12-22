@@ -77,18 +77,6 @@ def duree_en_minutes(duree):
 
 
 
-def categorisation_duree(dataframe, variable):
-    ''' 
-
-    '''
-        
-    bins = range(0, int(dataframe[variable].max()) + 10, 10)
-    labels = [f'{i}-{i+9}' for i in bins[:-1]]
-    dataframe['duree_cat'] = pd.cut(dataframe[variable], bins=bins, labels=labels, right=False)
-
-    return dataframe
-
-
 
 ############################################################# Traduction en valeur numérique des notes (Très bien, Pas mal, etc)
 
@@ -157,6 +145,7 @@ def base_prenom():
     return table
     
 
+
 def get_genre_individuel(dataframe, colonne):
     """  
     
@@ -172,6 +161,7 @@ def get_genre_individuel(dataframe, colonne):
 
     table = pd.merge(base_prenom_genre, dataframe, on='prenom', how='right')
     table = table.drop(columns=['prenom'])
+    table['genre_ind'] = table['genre_ind'].replace('m,f', 'f,m')
     
     return table
 
@@ -181,11 +171,11 @@ def get_genre_individuel(dataframe, colonne):
 
 def get_cat_recompenses(recompense):
     '''
-    Catégoriser les récompenses
+    Catégorisation des récompenses
     '''
 
     if pd.isna(recompense):
-        return 'rien'
+        return 'aucune récompense'
     elif 'prix' in recompense:
         return 'prix'
     elif 'nominations' in recompense:
@@ -290,9 +280,3 @@ def get_laureat_nomination(colonne):
     nominations = int(nominations.group(1)) if nominations else 0
 
     return prix, nominations
-    # Pour vérifier si la fonction fonctionne.
-        # Lire le fichier CSV dans un DataFrame
-        #data = pd.read_csv('/home/onyxia/work/Projet_Cin-/A_Base_de_données/base_final_recompenses.csv')
-        # Appliquer la fonction
-        #data[['prix', 'nominations']] = data['recompenses'].apply(lambda x: pd.Series(get_laureat_nomination(x)))
-        #print(data.head())
