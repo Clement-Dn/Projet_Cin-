@@ -87,8 +87,9 @@ def histogramme_genre_film(dataframe, genre1, genre2):
             if genre1 != ' 'and genre1 != genre2:
                 model = ols('spectators_rating ~ C(genre)', data=dataframe).fit()
                 anova_table = sm.stats.anova_lm(model, typ=2)
+                p_value = anova_table.iloc[0]['PR(>F)']
                 # Affchage de la p-value
-                plt.figtext(0.95, 0.40, f'P-value ANOVA: {anova_table.iloc[0]['PR(>F)']:.2f}', ha='left', va='top', bbox=dict(facecolor='white', alpha=0.5))
+                plt.figtext(0.95, 0.40, f"P-value du test ANOVA: {p_value:.3f}", ha='left', va='top', bbox=dict(facecolor='white', alpha=0.5))
         
 
 #############################################################  Histogramme de la distribution des notes par devis

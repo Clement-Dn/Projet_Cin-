@@ -92,7 +92,7 @@ def get_liens(annee, genre=None):
     spans = nav.find_all('span')
     dernier = spans[-1].get_text()
     dernier = int(dernier)
-    liens_pages = [f"{lien_maitre+"?page="}{i}" for i in range(1, dernier + 1)]
+    liens_pages = [f"{lien_maitre}?page={i}" for i in range(1, dernier + 1)]
 
     # Fonction asynchrone pour récupérer les liens d'une page
     nest_asyncio.apply()

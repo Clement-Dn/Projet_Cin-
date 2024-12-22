@@ -64,8 +64,10 @@ def p_value_anova_h_vs_f(dataframe):
     model = ols('spectators_rating ~ C(genre_ind)', data=dataframe).fit()
     anova_table = sm.stats.anova_lm(model, typ=2)
 
-    return(f'P-value du test ANOVA: {anova_table.iloc[0]['PR(>F)']:.3f}')
+    p_value = anova_table.iloc[0]['PR(>F)']
+    print(f"P-value du test ANOVA: {p_value:.3f}")
 
+    return 
 
 
 
