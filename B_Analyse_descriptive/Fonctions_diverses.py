@@ -78,6 +78,7 @@ def get_moyenne_par_modalite(dataframe, variable):
     presse=('press_rating', "mean"),
     spectateur=('spectators_rating', "mean"))
 
+    # Arrondi
     moyenne['presse'] = moyenne['presse'].round(2)
     moyenne['spectateur'] = moyenne['spectateur'].round(2)
     
