@@ -43,9 +43,11 @@ def comparaison_preferences(dataframe):
     html_content = f"""
     <div style="display:flex;">
         <div style="flex:1; margin-right:20px;">
+            <h2>Spectateurs</h2>
             {preferences_spect.to_html()}
         </div>
         <div style="flex:1;">
+            <h2>Presse</h2>
             {preferences_presse.to_html()}
         </div>
     </div>
