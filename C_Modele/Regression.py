@@ -121,11 +121,7 @@ def regression(dataframe):
     axes[0].set_title('Distribution des résidus')
     axes[0].set_xlabel('Résidus')
     axes[0].set_ylabel('Fréquence')
-
-    # Test de normalité des résidus
-    stat, p_value = shapiro(residus)
-    plt.text(-0.8, -0.2, f'p-value du test de normalité (Shapiro-Wilk) : {p_value:f}', transform=plt.gca().transAxes, bbox=dict(facecolor='white', alpha=0.5))
-
+    
     # Prédiction vs réel
     axes[1].scatter(y_test_original, y_pred, alpha=0.5)
     axes[1].plot([y_test_original.min(), y_test_original.max()], [y_test_original.min(), y_test_original.max()])
