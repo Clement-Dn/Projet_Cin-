@@ -114,7 +114,7 @@ def base_prenom():
     """  
 
     Récupération sur data.gouv d'une BDD contenant 11 627 prénoms de plusieurs pays, et 
-    pour lesquels leur genre (m/f/m,f/f,m est indiqué)   
+    pour lesquels leur genre (m /f / m,f / f,m est indiqué)   
     
     
     """
