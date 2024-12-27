@@ -107,7 +107,7 @@ def get_liens(annee, genre=None):
                     content = await response.text()
                     soup = BeautifulSoup(content, 'html.parser')
 
-                    # Trouver tous les divs avec la classe 'card entity-card entity-card-list cf'
+                    # Trouver tous les divs contenant les info sur les films, notamment le lien de la page et les notes de la presse
                     entity_cards = soup.find_all('div', class_='card entity-card entity-card-list cf')
 
                     # Liste pour stocker les liens trouvés
@@ -116,9 +116,10 @@ def get_liens(annee, genre=None):
                     # Parcourir chaque div trouvé
                     for card in entity_cards:
                         # Vérifier s'il y a un div avec la classe 'rating-holder rating-holder-3'
+                        # Car s'il n'y a pas de note la presse, alors la classe est rating-holder-2 
                         rating_holder = card.find('div', class_='rating-holder rating-holder-3')
                         if rating_holder:
-                            # Chercher le lien avec la classe 'meta-title-link' dans le div parent
+                            # Chercher le lien du film dans le div parent
                             meta_title_link = card.find('a', class_='meta-title-link')
                             if meta_title_link:
                                 # Ajouter le lien trouvé à la liste
@@ -183,24 +184,21 @@ def get_carac_film(base_liens):
 
                 identifiant = re.search(r'\d+', base_liens["links"][i]).group()
 
+                #On web scrap la durée, le titre, la date du film
                 release_element = soup.find('span', class_='meta-release-type')
                 release = release_element.text.strip() if release_element else ''
-
                 duration_span = soup.find('span', class_='spacer')
                 if duration_span:
                     duration = duration_span.find_next_sibling(text=True).strip()
                 else:
                     duration = 'N/A'
-
                 titre_div = soup.find('div', class_='titlebar-title titlebar-title-xl')
                 titre = titre_div.text.strip() if titre_div else ''
-
                 date_span = soup.find('span', class_='date')
                 date = date_span.text.strip() if date_span else ''
 
 
                 # Extraire les genres (maximum 3 genres)
-                # Trouver tous les liens avec la classe 'dark-grey-link'
                 meta_body = soup.find('div',class_='meta-body-item meta-body-info')
                 genres = meta_body.find_all('span', class_='dark-grey-link')
                 # Filtrer les liens pour ne garder que ceux avec un href de la forme '/films/genre-'
@@ -317,6 +315,11 @@ def get_carac_film(base_liens):
 
 
 def get_base_final(annee_debut, annee_fin):
+    # La fonction extrait les info de tous les films entre les dates selectionnées
+    
+    # ENTREES: années séléectionnées
+    # SORTIES: Base final
+    
     # Initialisation de la base finale comme un DataFrame vide
     base_final = pd.DataFrame()
 
