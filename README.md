@@ -5,7 +5,7 @@
 
 Le projet est effectué dans le cadre de l'enseignement **Python pour la Data Science** dispensé au sein de l'ENSAE.
 
-## Problématiques 
+## Problématique 
 Ce projet est le reflet de la volonté d'étudier l'appréciation des films par les spectateurs et la presse (caractérisée par une note) en fonction de leur caractéristiques (genre, durée, récompenses, etc). Nous nous demandions si certaines caractéristiques de films font qu'ils sont mieux notés ? Est-ce que certains genres de films sont plus appréciés que d'autres ? Est-ce que la presse et les spectateurs réagissent de manière similaire ? Est-ce que le genre du réalisateur d'un film peut avoir un lien sur les notes qui lui sont attribuées ?
 
 
