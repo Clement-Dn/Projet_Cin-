@@ -24,7 +24,7 @@ def regression(dataframe):
 
 
     ################### Variables catégorielles : transformation en variables binaires
-    categorical_columns = ['genre1', 'categorie_recompenses', 'genre_ind']
+    categorical_columns = ['genre1', 'genre_ind']
     X = pd.DataFrame()
 
     for col in categorical_columns:
@@ -37,10 +37,10 @@ def regression(dataframe):
 
 
     ################### Variables continues : normalisation
-    # Variable durée
-    X['duration_min'] = dataframe['duration_min']
+    # Variable explicatives
+    variables_continues = ['nominations', 'prix', 'duration_min']
     scaler_X = StandardScaler()
-    X[['duration_min']] = scaler_X.fit_transform(X[['duration_min']])
+    X[variables_continues] = scaler_X.fit_transform(dataframe[variables_continues])
 
 
     y = dataframe['spectators_rating']
@@ -62,6 +62,7 @@ def regression(dataframe):
 
     # récupération des valeurs originales (1 à 5)
     y_pred = scaler_y.inverse_transform(y_pred_norm.reshape(-1, 1)).flatten()
+    y_pred = np.clip(y_pred, 1, 5) # Si une prédiction est au-delà de 6, la note est ramenée à 5
     y_test_original = scaler_y.inverse_transform(y_test.reshape(-1, 1)).flatten()
 
     # Métriques sur les valeurs originales
@@ -106,7 +107,7 @@ def regression(dataframe):
     })
     coefficients_df = coefficients_df.sort_values(by='Coefficient', ascending=False)
 
-    print('\nATTENTION : les coefficients sont ceux de la régression avec les notes normalisées.\n')
+    print('\nATTENTION : Les coefficients sont ceux de la régression avec les notes normalisées.\n')
     print(coefficients_df)
 
 
@@ -130,7 +131,7 @@ def regression(dataframe):
     axes[1].plot([y_test_original.min(), y_test_original.max()], [y_test_original.min(), y_test_original.max()])
     axes[1].set_xlabel('Valeurs réelles')
     axes[1].set_ylabel('Valeurs prédites')
-    axes[1].set_title('Valeurs prédites vs. valeurs réelles')
+    axes[1].set_title('Valeurs prédites vs valeurs réelles')
 
 
     return

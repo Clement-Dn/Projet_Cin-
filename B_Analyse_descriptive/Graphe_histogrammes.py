@@ -231,4 +231,6 @@ def menu_deroulant_histogramme(dataframe, variable):
 
     if variable == 'type_de_devis':
         histogramme_categorie_de_film(dataframe, variable, menu_deroulant_1.value, menu_deroulant_2.value)
+    
+    return
 

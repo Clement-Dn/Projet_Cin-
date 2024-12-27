@@ -30,7 +30,7 @@ def mise_en_forme_decimale(valeur):
 
 
 
-#############################################################  Création de variables : annee, duree (en minutes) et catégorisation des durées
+#############################################################  Création de variables : annee et  duree (en minutes) 
 
 
 def get_annee(dataframe, colonne):
@@ -78,7 +78,7 @@ def duree_en_minutes(duree):
 
 
 
-############################################################# Traduction en valeur numérique des notes (Très bien, Pas mal, etc)
+############################################################# Traduction des notes (Très bien, Pas mal, etc) en valeur numérique (1 à 5)
 
 
 
@@ -166,12 +166,13 @@ def get_genre_individuel(dataframe, colonne):
     return table
 
 
-#############################################################  Catégorisation des récompenses 
+
+#############################################################  Récompenses : Création d'une variable catégorielle + variable contenant le nombre de prix/nominations
 
 
 def get_cat_recompenses(recompense):
     '''
-    Catégorisation des récompenses
+    Retourne si le contenu indique que le film n'a rien reçu ('aucune récompense'), a reçu au moins un 'prix', ou bien seulement une 'nomination'
     '''
 
     if pd.isna(recompense):
@@ -182,6 +183,26 @@ def get_cat_recompenses(recompense):
         return 'nominations'
     else:
         return 'rien'
+
+
+
+
+def get_laureat_nomination(colonne):
+    """
+    Création de deux colonnes: nombres de nomination & nombre de prix reçus.
+    """
+    if not isinstance(colonne, str):
+        return 0, 0
+
+    # Fonction pour extraire le nombre de prix et de nominations
+    prix = re.search(r'(\d+) prix', colonne)
+    nominations = re.search(r'(\d+) nominations', colonne)
+
+    prix = int(prix.group(1)) if prix else 0
+    nominations = int(nominations.group(1)) if nominations else 0
+
+    return prix, nominations
+
 
 
 
@@ -267,19 +288,3 @@ def ajout_genre_multiple(dataframe, colonne):
 
     return dataframe
 
-
-def get_laureat_nomination(colonne):
-    """
-    Création de deux colonnes: nombres de nomination & lauréats.
-    """
-    if not isinstance(colonne, str):
-        return 0, 0
-
-    # Fonction pour extraire le nombre de prix et de nominations
-    prix = re.search(r'(\d+) prix', colonne)
-    nominations = re.search(r'(\d+) nominations', colonne)
-
-    prix = int(prix.group(1)) if prix else 0
-    nominations = int(nominations.group(1)) if nominations else 0
-
-    return prix, nominations

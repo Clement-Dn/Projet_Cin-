@@ -49,15 +49,15 @@ def get_table_cluster(dataframe, data_presse):
 
 
     # colonnes communes  afin de gérer les presse qui n'évaluent pas les films de tous les genres
-    df_cleaned_columns = table_type.loc[:, table_type.isnull().sum() <= 15]  
-    df_cleaned_rows = df_cleaned_columns.loc[df_cleaned_columns.isnull().sum(axis=1) <= 0]
+    colonnes_selectionnees = table_type.loc[:, table_type.isnull().sum() <= 15]  
+    lignes_selectionnees = colonnes_selectionnees.loc[colonnes_selectionnees.isnull().sum(axis=1) <= 0]
 
-    common_columns = df_cleaned_rows.columns.intersection(table_genre.columns)
-    result_combined = pd.concat([table_genre[common_columns], df_cleaned_rows[common_columns]])
-    df_transposed = result_combined.T
+    colonnes_communes = lignes_selectionnees.columns.intersection(table_genre.columns)
+    table_finale = pd.concat([table_genre[colonnes_communes], lignes_selectionnees[colonnes_communes]])
+    table_finale_transpose = table_finale.T
 
 
-    return df_transposed
+    return table_finale_transpose
 
 
 
@@ -90,6 +90,16 @@ def optimal_clusters(dataframe, max_clusters):
 
 
 
+def normalisation(dataframe):
+    """
+    Normalisation de toutes les données présentes dans le dataframe
+
+    """
+    scaler = StandardScaler()  
+    return scaler.fit_transform(dataframe)
+
+
+
 
 def determine_optimal_clusters(dataframe, max_clusters):
     """
@@ -116,15 +126,6 @@ def determine_optimal_clusters(dataframe, max_clusters):
 
 
 
-def normalisation(dataframe):
-    """
-    Normalisation de toutes les données présentes dans le dataframe
-
-    """
-    scaler = StandardScaler()  
-    return scaler.fit_transform(dataframe)
-
-
 
 
 def clustering_K_means(dataframe, nb_clusters):
@@ -143,14 +144,15 @@ def clustering_K_means(dataframe, nb_clusters):
 
 
 
-
 def recuperer_clusters(dataframe, numero):
-    """ 
-    Recuperation de liste des presses dans chaque Cluster
     """
-
+    Récupération de la liste des presses dans chaque cluster.
+    """
     cluster_liste = dataframe[numero].tolist()
-    liste_formatee = ", ".join([f"'{element}'" for element in cluster_liste]) 
+    liste_formatee = ", ".join([f"'{element}'" for element in cluster_liste])
+
+    # Insértion d'un retour à la ligne pour faciliter l'affichage
+    liste_formatee = ', '.join(cluster_liste[:6]) + '\n' + ', '.join(cluster_liste[6:])
 
     return liste_formatee
 

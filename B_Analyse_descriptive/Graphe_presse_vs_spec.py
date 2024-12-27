@@ -146,3 +146,6 @@ def graphique_presse_vs_spect(dataframe):
     # Affichage des menus déroulants et le graphe initial
     display(menu_deroulant)
     plot_spec_vs_presse(dataframe, menu_deroulant.value)
+
+
+    return
