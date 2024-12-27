@@ -248,9 +248,16 @@ def get_genre_prenom(prenom):
     genre = base_prenom_genre[base_prenom_genre['prenom'].str.lower() == prenom_formate]
 
     if not genre.empty:
-        return genre['genre_ind'].values[0]
+        genre_trouve = genre['genre_ind'].values[0]
+        if genre_trouve == 'm,f':
+            genre_trouve = 'f,m'
+        return genre_trouve
+
     else:
         return 'non trouvé'
+
+
+
 
 
 def genres_multiple(liste):
@@ -267,7 +274,7 @@ def genres_multiple(liste):
             for prenom in prenoms:
                 if get_genre_prenom(prenom) == 'f':
                     return 'f_coréalisé'
-                    return prenom
+                    
             return 'm_coréalisé'
 
         return get_genre_prenom(prenoms[0])
