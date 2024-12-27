@@ -92,6 +92,10 @@ def histogramme_genre_film(dataframe, genre1, genre2):
                 plt.figtext(0.95, 0.40, f"P-value du test ANOVA: {p_value:.3f}", ha='left', va='top', bbox=dict(facecolor='white', alpha=0.5))
         
 
+
+
+
+
 #############################################################  Histogramme de la distribution des notes par devis
 
 
@@ -130,7 +134,6 @@ def histogramme_categorie_de_film(dataframe, variable, categorie1, categorie2):
 
 
 #############################################################  Menu déroulant commun
-
 
 
 def menu_deroulant_histogramme(dataframe, variable):

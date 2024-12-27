@@ -57,6 +57,9 @@ def comparaison_preferences(dataframe):
 
 
 
+#################################################### Test ANOVA sur le genre des réalisateur
+
+
 def p_value_anova_h_vs_f(dataframe):
     '''
         Retourne la p-value du test d'ANOVA pour les notations par rapport au genre des réalisateurs
@@ -71,6 +74,9 @@ def p_value_anova_h_vs_f(dataframe):
 
     return 
 
+
+
+#################################################### Moyennes de notes (spectateurs et presse) pour une modalité donnée
 
 
 def get_moyenne_par_modalite(dataframe, variable):
@@ -130,14 +136,15 @@ def boxplot_duree(dataframe, variable):
     return
 
 
-####################################################      
+
+####################################################   Analyses sur la base CNC   
 
 
 
 
 def diagramme_baton_genre_proportion(dataframe, variable) : 
     '''
-
+    Diagramme en barres des proportions des films selon la VARIABLE en fonction du genre du réalisateur 
     '''
     dataframe= dataframe[dataframe['genre_ind'].isin(['f', 'm', "f_coréalisé", "m_coréalisé" ])]
 
