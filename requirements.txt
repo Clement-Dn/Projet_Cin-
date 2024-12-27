@@ -24,11 +24,12 @@ requests
 scipy.stats
 seaborn
 
-sklearn.cluster
-sklearn.linear_model
-sklearn.metrics
-sklearn.model_selection
-sklearn.preprocessing
+scikit-learn
+# sklearn.cluster
+# sklearn.linear_model
+# sklearn.metrics
+# sklearn.model_selection
+# sklearn.preprocessing
 
 statsmodels.api
 statsmodels.formula.api
