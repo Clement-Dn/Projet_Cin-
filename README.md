@@ -31,11 +31,16 @@ Le projet est composé de 3 parties :
 - Peut-on regrouper certaines presse entre elles ?
 
 
-Les dossiers **A_Base_de_données**, **B_Analyse_descriptive** et **C_Modele** comprennent respectivement les fonctions utilisées pour chacune des parties du projet.
+
+## Présentation du dépôt
+
+Le rapport final présentant le projet et les résultats se trouve dans le Notebook ```Rapport_Projet_Cinema.ipynb```.
+
+Le fichier ```requirements.txt``` est appelé par pip afin d'installer les paquets nécessaires au début de l'exécution.  
+
+Les dossiers ```A_Base_de_données```, ```B_Analyse_descriptive``` et ```C_Modele``` comprennent respectivement les fonctions utilisées pour chacune des parties du projet.
 
 
-## Recommandation d'execution
-Le fichier **requirements.txt** contient la liste des bibliothèques nécessaires pour exécuter le projet.
 
 
 ## Lien vers le notebook final

@@ -4,24 +4,23 @@
 aiohttp
 asyncio
 bs4
-csv
 
-io
+
 ipywidgets
-IPython.display
+IPython
 joblib
 lxml
-lxml.html
+# lxml.html
 
-matplotlib.pyplot
+matplotlib
+# matplotlib.pyplot
 nest_asyncio
 numpy
 pandas
-re
 requests
 
-
-scipy.stats
+scipy
+# scipy.stats
 seaborn
 
 scikit-learn
@@ -31,9 +30,8 @@ scikit-learn
 # sklearn.model_selection
 # sklearn.preprocessing
 
-statsmodels.api
-statsmodels.formula.api
+statsmodels
+# statsmodels.api
+# statsmodels.formula.api
 
-time
 unidecode
-
