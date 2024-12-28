@@ -28,7 +28,7 @@ Le projet est composé de 3 parties :
 
 **3 - Modélisation**
 - Peut-on modéliser la note des spectateurs en fonction des caractéristiques des films ?
-- Peut-on regrouper certaines presse entre elles ?
+- Peut-on regrouper certaines presses entre elles ?
 
 
 
