@@ -6,8 +6,7 @@
 Le projet est effectué dans le cadre de l'enseignement **Python pour la Data Science** dispensé au sein de l'ENSAE.
 
 ## Problématique 
-Ce projet est le reflet de la volonté d'étudier l'appréciation des films par les spectateurs et la presse (caractérisée par une note) en fonction de leur caractéristiques (genre, durée, récompenses, etc). Nous nous demandions si certaines caractéristiques de films font qu'ils sont mieux notés ? Est-ce que certains genres de films sont plus appréciés que d'autres ? Est-ce que la presse et les spectateurs réagissent de manière similaire ? Est-ce que le genre du réalisateur d'un film peut avoir un lien sur les notes qui lui sont attribuées ?
-
+Dans le cadre du Projet Data Science nous avons choisi d'étudier l'appréciation des films par les utilisateurs de la plateforme Allociné et par la presse. Nous cherchons les déterminants des notes attribuées sur le site en considérant plusieurs variables (le genre du réalisateur, la durée du film, les récompenses institutionnelles, etc). Nous avons également cherché à comparer les notes données par les spectateurs et celles données par la presse.
 
 ## Plan du projet
 
